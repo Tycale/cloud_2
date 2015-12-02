@@ -9,7 +9,7 @@ var upsertTweet = 'INSERT INTO twitter.Tweets (tweetid, author, created_at, body
 
 var openCollection = function(callback) {
     app.db.collection(collectionName, callback);
-}
+};
 
 /* add a tweet*/
 exports.newTweet = function(data, callback)
@@ -34,4 +34,4 @@ exports.newTweet = function(data, callback)
     async.parallel([
 
     ], function (err, results) { callback(err, data); });
-}
+};
