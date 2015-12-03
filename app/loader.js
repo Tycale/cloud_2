@@ -4,7 +4,8 @@ var async = require('async');
 var uuid = require('node-uuid');
 var fs = require('fs');
 var byline = require('byline');
-var crypto    = require('crypto');
+var crypto = require('crypto');
+var assert = require('assert');
 
 var client = new cassandra.Client( { contactPoints : [ '127.0.0.1' ] } );
 client.connect(function(err, result) {
@@ -36,7 +37,7 @@ async.series([
     /////////
 
     function createFollowerTable(next) {
-        var query = 'CREATE TABLE IF NOT EXISTS twitter.Follower (' +
+        var query = 'CREATE TABLE IF NOT EXISTS twitter.ForwardFollowing (' +
             'username text,' +
             'follower text,' +
             'date timestamp,' +
@@ -46,11 +47,11 @@ async.series([
     },
 
     function createFollowingTable(next) {
-        var query = 'CREATE TABLE IF NOT EXISTS twitter.Following (' +
+        var query = 'CREATE TABLE IF NOT EXISTS twitter.BackwardFollowing (' +
             'username text,' +
             'have_follower text,' +
             'date timestamp,' +
-            'PRIMARY KEY (have_follower, date))' +
+            'PRIMARY KEY (username, date))' +
             'WITH CLUSTERING ORDER BY (date DESC);';
         client.execute(query, next);
     },
@@ -115,9 +116,9 @@ async.series([
 
         var upsertUser = 'INSERT INTO twitter.Users (username, name, pass) '
             + 'VALUES(?, ?, ?);';
-        var upsertFollower = 'INSERT INTO twitter.Follower (username, follower, date) ' +
+        var upsertForwardFollowing = 'INSERT INTO twitter.ForwardFollowing (username, follower, date) ' +
             'VALUES(?, ?, ?);';
-        var upsertFollowing = 'INSERT INTO twitter.Following (username, have_follower, date) ' +
+        var upsertBackwardFollowing = 'INSERT INTO twitter.BackwardFollowing (username, have_follower, date) ' +
             'VALUES(?, ?, ?);';
         var u = byline(fs.createReadStream(__dirname + '/users.json'));
 
@@ -133,10 +134,10 @@ async.series([
                         /////////
                         // HINT: UPDATE USER RELATIONS TO USERS FOLLOWED BY USER obj
                         /////////
-                        client.execute(upsertFollower,
+                        client.execute(upsertForwardFollowing,
                             [obj.username, obj.followers[i], new Date()],
                             afterExecution('Error: ', 'User ' + obj.username + ' following ' + obj.followers[i] + ' upserted. '));
-                        client.execute(upsertFollowing,
+                        client.execute(upsertBackwardFollowing,
                             [obj.followers[i], obj.username, new Date()],
                             afterExecution('Error: ', 'User ' + obj.followers[i] + ' has follower ' + obj.username + ' upserted.'));
                     }
@@ -149,6 +150,9 @@ async.series([
     },
     function insertTweet(next)
     {
+
+        var getFollowers = 'SELECT have_follower FROM twitter.BackwardFollowing WHERE username=?';
+
         var upsertTweet = 'INSERT INTO twitter.Tweets (tweetid, username, author, created_at, body) '
             + 'VALUES(?, ?, ?, ?, ?);';
         var upsertTimeline = 'INSERT INTO twitter.Timeline (username, date, tweetid) '
@@ -176,7 +180,13 @@ async.series([
                     afterExecution('Error: ', 'Userline ' + obj.tweetid + ' upserted.'));
 
 
-            // TODO: Get followers and upsert TimeLine table
+            client.execute(getFollowers, [obj.username], function(err, result) {
+                assert.ifError(err);
+                for(var i in result.rows){
+                    console.dir(result.rows[i]);
+                }
+            },
+                afterExecution('Error: ', 'Timeline : tweet ' + obj.tweetid + ' upserted to ' + obj.username +'.'));
 
         } catch (err) {
             console.log("Error:", err);
