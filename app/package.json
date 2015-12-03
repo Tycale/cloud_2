@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node app.js",
-    "startload": "node loader.js"
+    "test": "node loader.js"
   },
   "dependencies": {
     "assert": "^1.1.2",
