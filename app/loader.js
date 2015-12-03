@@ -60,8 +60,7 @@ async.series([
             'tweetid timeuuid,' +
             'username text,' +
             'author text,' +
-            'created_at text,' +
-            'date timestamp,' +
+            'created_at timestamp,' +
             'body text,' +
             'PRIMARY KEY (tweetid, created_at))' +
             'WITH CLUSTERING ORDER BY (created_at DESC);';
@@ -166,7 +165,7 @@ async.series([
             obj.created_at = new Date(Date.parse(obj.created_at));
             client.execute(upsertTweet,
                     [obj.tweetid, obj.username, obj.name, obj.created_at, obj.text],
-                    afterExecution('Error:', 'Tweet ' + obj.tweetid + ' upserted.')); //TODO : debug this
+                    afterExecution('Error:', 'Tweet ' + obj.tweetid + ' upserted.'));
 
             /////////
             // HINT: UPDATE TIMELINES CONTAINING TWEET obj
