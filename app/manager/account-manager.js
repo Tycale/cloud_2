@@ -9,7 +9,8 @@ var insertUser = "INSERT INTO twitter.Users (username, name, pass) "
             + "VALUES(?, ?, ?);";
 
 // request for HINTS
-var getfollowerReq = "SELECT ... FROM twitter. ... WHERE username = ?"
+var getfollowerReq = "SELECT follower FROM twitter.ForwardFollowing WHERE username = ?"
+var getfollowingReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username = ?"
 /* login validation methods */
 
 exports.autoLogin = function(user, pass, callback)
@@ -74,7 +75,7 @@ exports.getFollowers = function(username, callback) {
 	// If the query fails:
 	// Invoke callback(e, null)
 
-  // request TODO 'SELECT follower from twitter.follower where username =' + username +';'
+
 }
 
 exports.getFollowing = function(username, callback) {
