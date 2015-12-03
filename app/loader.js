@@ -175,6 +175,7 @@ async.series([
                     [obj.username, new Date(), obj.tweetid],
                     afterExecution('Error: ', 'Userline ' + obj.tweetid + ' upserted.'));
 
+
             // TODO: Get followers and upsert TimeLine table
 
         } catch (err) {
