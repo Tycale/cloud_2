@@ -24,9 +24,9 @@ async.series([
         client.execute(query, next);
     },
     function createUserTable(next) {
-        var query = 'CREATE TABLE IF NOT EXISTS twitter.Users (' + 
-                    'username varchar PRIMARY KEY,' + 
-                    'name text,' + 
+        var query = 'CREATE TABLE IF NOT EXISTS twitter.Users (' +
+                    'username varchar PRIMARY KEY,' +
+                    'name text,' +
                     'pass text);';
         client.execute(query, next);
     },
@@ -89,7 +89,7 @@ async.series([
 
 
     function insertUsers(next)
-    {        
+    {
         /* private encryption & validation methods */
         // To insert same password "test" for all the users
         var generateSalt = function()
@@ -102,17 +102,17 @@ async.series([
             }
             return salt;
         }
-        
+
         var md5 = function(str) {
             return crypto.createHash('md5').update(str).digest('hex');
         }
-        
+
         var saltAndHash = function(pass, callback)
         {
             var salt = generateSalt();
             callback(salt + md5(pass + salt));
         }
-        
+
         var upsertUser = 'INSERT INTO twitter.Users (username, name, pass) '
             + 'VALUES(?, ?, ?);';
         var upsertFollower = 'INSERT INTO twitter.Follower (username, follower, date) ' +
@@ -120,7 +120,7 @@ async.series([
         var upsertFollowing = 'INSERT INTO twitter.Following (username, have_follower, date) ' +
             'VALUES(?, ?, ?);';
         var u = byline(fs.createReadStream(__dirname + '/users.json'));
-     
+
         u.on('data', function(line) {
             try {
                 var obj = JSON.parse(line);
@@ -148,7 +148,7 @@ async.series([
         u.on('end', next);
     },
     function insertTweet(next)
-    {        
+    {
         var upsertTweet = 'INSERT INTO twitter.Tweets (tweetid, username, author, created_at, body) '
             + 'VALUES(?, ?, ?, ?, ?);';
         var upsertTimeline = 'INSERT INTO twitter.Timeline (username, date, tweetid) '
@@ -182,7 +182,7 @@ async.series([
             console.log("Error:", err);
         }
         });
-        t.on('end', next);        
+        t.on('end', next);
     }
 ], afterExecution('Error: ', 'Tables created.'));
 
@@ -195,4 +195,3 @@ function afterExecution(errorMessage, successMessage) {
         }
     }
 }
-

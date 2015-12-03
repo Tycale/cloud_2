@@ -5,9 +5,11 @@ var app = require('../app');
 var collectionName = "Users";
 var getUser = "SELECT * FROM twitter.Users WHERE username=?";
 
-var insertUser = "INSERT INTO twitter.Users (username, name, pass) " 
+var insertUser = "INSERT INTO twitter.Users (username, name, pass) "
             + "VALUES(?, ?, ?);";
 
+// request for HINTS
+var getfollowerReq = "SELECT ... FROM twitter. ... WHERE username = ?"
 /* login validation methods */
 
 exports.autoLogin = function(user, pass, callback)
@@ -71,6 +73,8 @@ exports.getFollowers = function(username, callback) {
 	// Invoke callback(null, followers) where followers is a list of usernames
 	// If the query fails:
 	// Invoke callback(e, null)
+
+  // request TODO 'SELECT follower from twitter.follower where username =' + username +';'
 }
 
 exports.getFollowing = function(username, callback) {
