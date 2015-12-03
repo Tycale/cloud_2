@@ -183,10 +183,12 @@ async.series([
             client.execute(getFollowers, [obj.username], function(err, result) {
                 assert.ifError(err);
                 for(var i in result.rows){
-                    console.dir(result.rows[i]);
+                    client.execute(upsertTimeline,
+                        [result.rows[i].have_follower, new Date(), obj.tweetid],
+                        afterExecution('Error: ', 'Timeline ' + obj.tweetid + ' upserted to ' +
+                            result.rows[i].have_follower + '.'));
                 }
-            },
-                afterExecution('Error: ', 'Timeline : tweet ' + obj.tweetid + ' upserted to ' + obj.username +'.'));
+            });
 
         } catch (err) {
             console.log("Error:", err);
