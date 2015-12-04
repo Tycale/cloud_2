@@ -139,11 +139,11 @@ exports.unfollow = function(follower, followed, callback)
 	// Invoke callback(null, follow) where follow is the username of person who is followed by follower
 	// If the query fails:
 	// Invoke callback(e, null)
-    var deleteForwardFollowing = "DELETE FROM twitter.ForwardFollowing WHERE username=?";
-    var deleteBackwardFollowing = "DELETE FROM twitter.BackwardFollowing WHERE username=?";
+    var deleteForwardFollowing = "DELETE FROM twitter.ForwardFollowing WHERE username=? AND follower=?";
+    var deleteBackwardFollowing = "DELETE FROM twitter.BackwardFollowing WHERE username=? AND have_follower=?";
     var queries = [
-        { query: deleteBackwardFollowing, params: [follower]},
-        { query: deleteForwardFollowing, params: [followed]},
+        { query: deleteBackwardFollowing, params: [follower, followed]},
+        { query: deleteForwardFollowing, params: [followed, follower]},
     ];
     app.db.batch(queries, { prepare: true}, function(e) {
         if (e == null) {
@@ -166,8 +166,8 @@ exports.isFollowing = function(follower, followed, callback)
 	// Invoke callback(null, follow) where follower is the username of person who follows another one.
 	// If the query fails:
 	// Invoke callback(e, null)
-    var isFollowingReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username = ?";
-    app.db.execute(isFollowingReq, [ follower ], function(e, result) {
+    var isFollowingReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username=? AND have_follower=?";
+    app.db.execute(isFollowingReq, [ followed, follower ], function(e, result) {
         if (result && result.rows.length > 0) {
             callback(null, follower);
         }

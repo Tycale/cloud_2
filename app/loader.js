@@ -26,9 +26,9 @@ async.series([
     },
     function createUserTable(next) {
         var query = 'CREATE TABLE IF NOT EXISTS twitter.Users (' +
-                    'username varchar PRIMARY KEY,' +
-                    'name text,' +
-                    'pass text);';
+            'username varchar PRIMARY KEY,' +
+            'name text,' +
+            'pass text);';
         client.execute(query, next);
     },
 
@@ -37,11 +37,20 @@ async.series([
     /////////
 
     function createFollowerTable(next) {
-        var query = 'CREATE TABLE IF NOT EXISTS twitter.Following (' +
+        var query = 'CREATE TABLE IF NOT EXISTS twitter.ForwardFollowing (' +
             'username text,' +
-            'following text,' +
+            'follower text,' +
             'date timestamp,' +
-            'PRIMARY KEY (username, following));';
+            'PRIMARY KEY (username, follower));';
+        client.execute(query, next);
+    },
+
+    function createFollowingTable(next) {
+        var query = 'CREATE TABLE IF NOT EXISTS twitter.BackwardFollowing (' +
+            'username text,' +
+            'have_follower text,' +
+            'date timestamp,' +
+            'PRIMARY KEY (username, have_follower));';
         client.execute(query, next);
     },
 
@@ -52,7 +61,7 @@ async.series([
             'author text,' +
             'created_at timestamp,' +
             'body text,' +
-            'PRIMARY KEY (tweetid));';
+            'PRIMARY KEY(tweetid));';
         client.execute(query, next);
     },
 
@@ -100,7 +109,9 @@ async.series([
 
         var upsertUser = 'INSERT INTO twitter.Users (username, name, pass) '
             + 'VALUES(?, ?, ?);';
-        var upsertFollowing = 'INSERT INTO twitter.Following (username, following, date) ' +
+        var upsertForwardFollowing = 'INSERT INTO twitter.ForwardFollowing (username, follower, date) ' +
+            'VALUES(?, ?, ?);';
+        var upsertBackwardFollowing = 'INSERT INTO twitter.BackwardFollowing (username, have_follower, date) ' +
             'VALUES(?, ?, ?);';
         var u = byline(fs.createReadStream(__dirname + '/users.json'));
 
@@ -116,9 +127,12 @@ async.series([
                         /////////
                         // HINT: UPDATE USER RELATIONS TO USERS FOLLOWED BY USER obj
                         /////////
-                        client.execute(upsertFollowing,
+                        client.execute(upsertForwardFollowing,
                             [obj.username, obj.followers[i], new Date()],
-                            afterExecution('Error: ', 'User ' + obj.username + ' following ' + obj.followers[i] + ' upserted.'));
+                            afterExecution('Error: ', 'User ' + obj.username + ' following ' + obj.followers[i] + ' upserted. '));
+                        client.execute(upsertBackwardFollowing,
+                            [obj.followers[i], obj.username, new Date()],
+                            afterExecution('Error: ', 'User ' + obj.followers[i] + ' has follower ' + obj.username + ' upserted.'));
                     }
                 });
             } catch (err) {
@@ -130,7 +144,7 @@ async.series([
     function insertTweet(next)
     {
 
-        var getFollowers = 'SELECT following FROM twitter.Following WHERE username=?';
+        var getFollowers = 'SELECT have_follower FROM twitter.BackwardFollowing WHERE username=?';
 
         var upsertTweet = 'INSERT INTO twitter.Tweets (tweetid, username, author, created_at, body) '
             + 'VALUES(?, ?, ?, ?, ?);';
@@ -142,36 +156,36 @@ async.series([
         var t = byline(fs.createReadStream(__dirname + '/sample.json'));
 
         t.on('data', function(line) {
-        try {
-            var obj = JSON.parse(line);
-            obj.tweetid = uuid.v1();
-            obj.created_at = new Date(Date.parse(obj.created_at));
-            client.execute(upsertTweet,
+            try {
+                var obj = JSON.parse(line);
+                obj.tweetid = uuid.v1();
+                obj.created_at = new Date(Date.parse(obj.created_at));
+                client.execute(upsertTweet,
                     [obj.tweetid, obj.username, obj.name, obj.created_at, obj.text],
                     afterExecution('Error:', 'Tweet ' + obj.tweetid + ' upserted.'));
 
-            /////////
-            // HINT: UPDATE TIMELINES CONTAINING TWEET obj
-            /////////
+                /////////
+                // HINT: UPDATE TIMELINES CONTAINING TWEET obj
+                /////////
 
-            client.execute(upsertUserline,
+                client.execute(upsertUserline,
                     [obj.tweetid, obj.username],
                     afterExecution('Error: ', 'Userline ' + obj.tweetid + ' upserted.'));
 
 
-            client.execute(getFollowers, [obj.username], function(err, result) {
-                assert.ifError(err);
-                for(var i in result.rows){
-                    client.execute(upsertTimeline,
-                        [obj.tweetid, result.rows[i].following],
-                        afterExecution('Error: ', 'Timeline ' + obj.tweetid + ' upserted to ' +
-                            result.rows[i].following + '.'));
-                }
-            });
+                client.execute(getFollowers, [obj.username], function(err, result) {
+                    assert.ifError(err);
+                    for(var i in result.rows){
+                        client.execute(upsertTimeline,
+                            [obj.tweetid, result.rows[i].have_follower],
+                            afterExecution('Error: ', 'Timeline ' + obj.tweetid + ' upserted to ' +
+                                result.rows[i].have_follower + '.'));
+                    }
+                });
 
-        } catch (err) {
-            console.log("Error:", err);
-        }
+            } catch (err) {
+                console.log("Error:", err);
+            }
         });
         t.on('end', next);
     }
