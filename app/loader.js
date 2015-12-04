@@ -41,8 +41,7 @@ async.series([
             'username text,' +
             'follower text,' +
             'date timestamp,' +
-            'PRIMARY KEY (username, date)) ' +
-            'WITH CLUSTERING ORDER BY (date DESC);';
+            'PRIMARY KEY (username, follower));';
         client.execute(query, next);
     },
 
@@ -51,18 +50,18 @@ async.series([
             'username text,' +
             'have_follower text,' +
             'date timestamp,' +
-            'PRIMARY KEY (username, date)) ' +
-            'WITH CLUSTERING ORDER BY (date DESC);';
+            'PRIMARY KEY (username, have_follower));';
         client.execute(query, next);
     },
 
     function createTweetsTable(next) {
         var query = 'CREATE TABLE IF NOT EXISTS twitter.Tweets (' +
-            'tweetid timeuuid PRIMARY KEY,' +
+            'tweetid timeuuid,' +
             'username text,' +
             'author text,' +
-            'created_at text,' +
-            'body text);';
+            'created_at timestamp,' +
+            'body text,' +
+            'PRIMARY KEY(tweetid));';
         client.execute(query, next);
     },
 
@@ -70,7 +69,7 @@ async.series([
         var query = 'CREATE TABLE IF NOT EXISTS twitter.Timeline (' +
             'tweetid timeuuid,' +
             'username text,' +
-            'PRIMARY KEY (tweetid, username));';
+            'PRIMARY KEY (username, tweetid));';
         client.execute(query, next);
     },
 
@@ -78,7 +77,7 @@ async.series([
         var query = 'CREATE TABLE IF NOT EXISTS twitter.Userline (' +
             'tweetid timeuuid,' +
             'username text,' +
-            'PRIMARY KEY (tweetid, username));';
+            'PRIMARY KEY (username, tweetid));';
         client.execute(query, next);
     },
 

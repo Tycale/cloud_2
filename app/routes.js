@@ -105,7 +105,6 @@ router.post('/validateSubscription', function(req, res) {
 
 router.get('/usr', function(req, res) {
     res.render('profile', {});
-    app.userlineState = -1;
 });
 
 /** Return informations about user **/
@@ -148,7 +147,7 @@ router.get('/usr/:username/following', function(req, res) {
     }
     AM.getFollowing(req.param('username'), function(e, o){
         if (e != null)
-            return console.log(err);
+            return console.log(e);
         res.status(200).send(o).end();
     });
 });
@@ -159,7 +158,7 @@ router.get('/usr/:username/followers', function(req, res) {
     }
     AM.getFollowers(req.param('username'), function(e, o){
         if (e != null)
-            return console.log(err);
+            return console.log(e);
         res.status(200).send(o).end();
     });
 });
