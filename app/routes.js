@@ -124,7 +124,7 @@ router.get('/usr/:username', function(req, res) {
         AM.getUserInfo(req.param('username'), function(e, o) {
             if (e != null)
                 return console.log(e);
-            result.fullname = o.fullname;
+            result.fullname = o.name;
             res.status(200).send(result).end();
         });
     });
@@ -146,12 +146,22 @@ router.get('/usr/:username/following', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
+    AM.getFollowing(req.param('username'), function(e, o){
+        if (e != null)
+            return console.log(err);
+        res.status(200).send(o).end();
+    });
 });
 
 router.get('/usr/:username/followers', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
+    AM.getFollowers(req.param('username'), function(e, o){
+        if (e != null)
+            return console.log(err);
+        res.status(200).send(o).end();
+    });
 });
 
 router.get('/usr/:username/follow', function(req, res) {
@@ -183,7 +193,6 @@ router.get('/usr/:username/unfollow', function(req, res) {
 
 router.get('/home', function(req, res) {
      res.render('home', {});
-     app.timelineState = -1;
 });
 
 router.get('/newsFeed/:offset', function(req, res) {

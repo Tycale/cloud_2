@@ -1,6 +1,7 @@
 var crypto 		= require('crypto');
 var moment 		= require('moment');
 var app = require('../app');
+var _ = require('underscore');
 
 var collectionName = "Users";
 var getUser = "SELECT * FROM twitter.Users WHERE username=?";
@@ -8,18 +9,15 @@ var getUser = "SELECT * FROM twitter.Users WHERE username=?";
 var insertUser = "INSERT INTO twitter.Users (username, name, pass) "
             + "VALUES(?, ?, ?);";
 
-// request for HINTS
-var getfollowerReq = "SELECT follower FROM twitter.ForwardFollowing WHERE username = ?";
-var getfollowingReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username = ?";
+
 /* login validation methods */
 
 exports.autoLogin = function(user, pass, callback)
 {
 	app.db.execute(getUser, [ user ], function(e, result) {
-		if (result.rows.length > 0) {
+		if (result && result.rows.length > 0) {
 			var o = result.rows[0];
 			o.pass == pass ? callback(o) : callback(null);
-			app.timelineState = -1;
 		}
 		else{
 			callback(null);
@@ -30,7 +28,7 @@ exports.autoLogin = function(user, pass, callback)
 exports.manualLogin = function(user, pass, callback)
 {
 	app.db.execute(getUser, [ user ], function(e, result) {
-		if (result.rows.length == 0){
+		if (result && result.rows.length == 0){
 			callback('user-not-found');
 		}
 		else{
@@ -38,7 +36,6 @@ exports.manualLogin = function(user, pass, callback)
 			validatePassword(pass, o.pass, function(err, res) {
 				if (res){
 					callback(null, o);
-					app.timelineState = -1;
 					console.log("Successful!")
 				}
 				else {
@@ -53,13 +50,13 @@ exports.manualLogin = function(user, pass, callback)
 exports.addNewAccount = function(newData, callback)
 {
 	app.db.execute(getUser, [newData.username], function(e, result){
-		if (result.rows.length > 0){
+		if (result && result.rows.length > 0){
 			callback('username-taken');
 		}
 		else{
 			saltAndHash(newData.pass, function(hash){
 				newData.pass = hash;
-				app.db.execute(insertUser, [newData.username, '', newData.pass], callback);
+				app.db.execute(insertUser, [newData.username, newData.fullname, newData.pass], callback);
 			});
 		}
 	});
@@ -74,6 +71,15 @@ exports.getFollowers = function(username, callback) {
 	// Invoke callback(null, followers) where followers is a list of usernames
 	// If the query fails:
 	// Invoke callback(e, null)
+    var getfollowerReq = "SELECT follower FROM twitter.ForwardFollowing WHERE username = ?";
+    app.db.execute(getfollowerReq, [ username ], function(e, result) {
+        if (result && result.rows.length > 0) {
+            callback(null, _(result.rows).pluck('follower'));
+        }
+        else{
+            callback(e, null);
+        }
+    });
 };
 
 exports.getFollowing = function(username, callback) {
@@ -83,6 +89,15 @@ exports.getFollowing = function(username, callback) {
 	// Invoke callback(null, follows) where follows is a list of persons that are followed by the username
 	// If the query fails:
 	// Invoke callback(e, null)
+    var getfollowingReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username = ?";
+    app.db.execute(getfollowingReq, [ username ], function(e, result) {
+        if (result && result.rows.length > 0) {
+            callback(null, _(result.rows).pluck('have_follower'));
+        }
+        else{
+            callback(e, null);
+        }
+    });
 };
 
 /* Follow user */
@@ -96,6 +111,21 @@ exports.follow = function(follower, followed, callback)
 	// Invoke callback(null, follow) where follow is the username of person who is followed by follower
 	// If the query fails:
 	// Invoke callback(e, null)
+    var insertForwardFollowing = "INSERT INTO twitter.ForwardFollowing (username, follower, date) VALUES(?, ?, ?)";
+    var insertBackwardFollowing = "INSERT INTO twitter.BackwardFollowing (username, have_follower, date) VALUES(?, ?, ?)";
+    var date = new Date();
+    var queries = [
+        { query: insertBackwardFollowing, params: [follower, followed, date]},
+        { query: insertForwardFollowing, params: [followed, follower, date]},
+        ];
+    app.db.batch(queries, { prepare: true}, function(e) {
+        if (e == null) {
+            callback(null, follower);
+        }
+        else{
+            callback(e, null);
+        }
+    });
 };
 
 /* Unfollow user */
@@ -109,6 +139,20 @@ exports.unfollow = function(follower, followed, callback)
 	// Invoke callback(null, follow) where follow is the username of person who is followed by follower
 	// If the query fails:
 	// Invoke callback(e, null)
+    var deleteForwardFollowing = "DELETE FROM twitter.ForwardFollowing WHERE username=?";
+    var deleteBackwardFollowing = "DELETE FROM twitter.BackwardFollowing WHERE username=?";
+    var queries = [
+        { query: deleteBackwardFollowing, params: [follower]},
+        { query: deleteForwardFollowing, params: [followed]},
+    ];
+    app.db.batch(queries, { prepare: true}, function(e) {
+        if (e == null) {
+            callback(null, follower);
+        }
+        else{
+            callback(e, null);
+        }
+    });
 };
 
 
@@ -122,6 +166,15 @@ exports.isFollowing = function(follower, followed, callback)
 	// Invoke callback(null, follow) where follower is the username of person who follows another one.
 	// If the query fails:
 	// Invoke callback(e, null)
+    var isFollowingReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username = ?";
+    app.db.execute(isFollowingReq, [ follower ], function(e, result) {
+        if (result && result.rows.length > 0) {
+            callback(null, follower);
+        }
+        else{
+            callback(e, null);
+        }
+    });
 };
 
 
@@ -134,6 +187,9 @@ exports.getUserTimelines = function(username, callback) {
 	// Invoke callback(null, tweets) where tweets are the feed from all followed accounts.
 	// If the query fails:
 	// Invoke callback(e, null)
+    var getReq = "SELECT tweetid FROM twitter.Timeline WHERE username = ?";
+    callback('', null)
+
 };
 
 exports.getUserlines = function(username, callback) {
@@ -143,6 +199,7 @@ exports.getUserlines = function(username, callback) {
 	// Invoke callback(null, tweets) where tweets are all the tweet of the account identified by username.
 	// If the query fails:
 	// Invoke callback(e, null)
+    callback('', null)
 };
 
 /* get User tweets */
@@ -154,6 +211,15 @@ exports.getUserInfo = function(username, callback) {
 	// Invoke callback(null, userinfo).
 	// If the query fails:
 	// Invoke callback(e, null)
+    var getUserInfoReq = "SELECT name FROM twitter.users WHERE username = ?";
+    app.db.execute(getUserInfoReq, [ username ], function(e, result) {
+        if (result && result.rows.length > 0) {
+            callback(null, result.rows[0]);
+        }
+        else{
+            callback(e, null);
+        }
+    });
 };
 
 /* private encryption & validation methods */
