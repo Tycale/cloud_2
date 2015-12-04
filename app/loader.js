@@ -25,9 +25,9 @@ async.series([
         client.execute(query, next);
     },
     function createUserTable(next) {
-        var query = 'CREATE TABLE IF NOT EXISTS twitter.Users (' + 
-                    'username varchar PRIMARY KEY,' + 
-                    'name text,' + 
+        var query = 'CREATE TABLE IF NOT EXISTS twitter.Users (' +
+                    'username varchar PRIMARY KEY,' +
+                    'name text,' +
                     'pass text);';
         client.execute(query, next);
     },
@@ -84,7 +84,7 @@ async.series([
 
 
     function insertUsers(next)
-    {        
+    {
         /* private encryption & validation methods */
         // To insert same password "test" for all the users
         var generateSalt = function()
@@ -97,17 +97,17 @@ async.series([
             }
             return salt;
         }
-        
+
         var md5 = function(str) {
             return crypto.createHash('md5').update(str).digest('hex');
         }
-        
+
         var saltAndHash = function(pass, callback)
         {
             var salt = generateSalt();
             callback(salt + md5(pass + salt));
         }
-        
+
         var upsertUser = 'INSERT INTO twitter.Users (username, name, pass) '
             + 'VALUES(?, ?, ?);';
         var upsertForwardFollowing = 'INSERT INTO twitter.ForwardFollowing (username, follower, date) ' +
@@ -115,7 +115,7 @@ async.series([
         var upsertBackwardFollowing = 'INSERT INTO twitter.BackwardFollowing (username, have_follower, date) ' +
             'VALUES(?, ?, ?);';
         var u = byline(fs.createReadStream(__dirname + '/users.json'));
-     
+
         u.on('data', function(line) {
             try {
                 var obj = JSON.parse(line);
@@ -144,7 +144,9 @@ async.series([
     },
     function insertTweet(next)
     {
+
         var getFollowers = 'SELECT have_follower FROM twitter.BackwardFollowing WHERE username=?';
+
         var upsertTweet = 'INSERT INTO twitter.Tweets (tweetid, username, author, created_at, body) '
             + 'VALUES(?, ?, ?, ?, ?);';
         var upsertTimeline = 'INSERT INTO twitter.Timeline (tweetid, username) '
@@ -199,4 +201,3 @@ function afterExecution(errorMessage, successMessage) {
         }
     }
 }
-
