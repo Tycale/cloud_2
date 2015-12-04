@@ -22,7 +22,7 @@ exports.autoLogin = function(user, pass, callback)
 			callback(null);
 		}
 	});
-}
+};
 
 exports.manualLogin = function(user, pass, callback)
 {
@@ -44,7 +44,7 @@ exports.manualLogin = function(user, pass, callback)
 			});
 		}
 	});
-}
+};
 
 /* record insertion, update & deletion methods */
 exports.addNewAccount = function(newData, callback)
@@ -60,7 +60,7 @@ exports.addNewAccount = function(newData, callback)
 			});
 		}
 	});
-}
+};
 
 /* Return Following, Followers */
 
@@ -71,7 +71,7 @@ exports.getFollowers = function(username, callback) {
 	// Invoke callback(null, followers) where followers is a list of usernames
 	// If the query fails:
 	// Invoke callback(e, null)
-}
+};
 
 exports.getFollowing = function(username, callback) {
 	// HINT:
@@ -80,7 +80,7 @@ exports.getFollowing = function(username, callback) {
 	// Invoke callback(null, follows) where follows is a list of persons that are followed by the username
 	// If the query fails:
 	// Invoke callback(e, null)
-}
+};
 
 /* Follow user */
 
@@ -93,7 +93,7 @@ exports.follow = function(follower, followed, callback)
 	// Invoke callback(null, follow) where follow is the username of person who is followed by follower
 	// If the query fails:
 	// Invoke callback(e, null)
-}
+};
 
 /* Unfollow user */
 
@@ -106,7 +106,7 @@ exports.unfollow = function(follower, followed, callback)
 	// Invoke callback(null, follow) where follow is the username of person who is followed by follower
 	// If the query fails:
 	// Invoke callback(e, null)
-}
+};
 
 
 /* is Following */
@@ -119,7 +119,7 @@ exports.isFollowing = function(follower, followed, callback)
 	// Invoke callback(null, follow) where follower is the username of person who follows another one.
 	// If the query fails:
 	// Invoke callback(e, null)
-}
+};
 
 
 /* get User tweets */
@@ -131,7 +131,7 @@ exports.getUserTimelines = function(username, callback) {
 	// Invoke callback(null, tweets) where tweets are the feed from all followed accounts.
 	// If the query fails:
 	// Invoke callback(e, null)
-}
+};
 
 exports.getUserlines = function(username, callback) {
 	// HINT:
@@ -140,7 +140,7 @@ exports.getUserlines = function(username, callback) {
 	// Invoke callback(null, tweets) where tweets are all the tweet of the account identified by username.
 	// If the query fails:
 	// Invoke callback(e, null)
-}
+};
 
 /* get User tweets */
 
@@ -151,7 +151,7 @@ exports.getUserInfo = function(username, callback) {
 	// Invoke callback(null, userinfo).
 	// If the query fails:
 	// Invoke callback(e, null)
-}
+};
 
 /* private encryption & validation methods */
 
@@ -164,21 +164,21 @@ var generateSalt = function()
 		salt += set[p];
 	}
 	return salt;
-}
+};
 
 var md5 = function(str) {
 	return crypto.createHash('md5').update(str).digest('hex');
-}
+};
 
 var saltAndHash = function(pass, callback)
 {
 	var salt = generateSalt();
 	callback(salt + md5(pass + salt));
-}
+};
 
 var validatePassword = function(plainPass, hashedPass, callback)
 {
 	var salt = hashedPass.substr(0, 10);
 	var validHash = salt + md5(plainPass + salt);
 	callback(null, hashedPass === validHash);
-}
+};
