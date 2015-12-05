@@ -121,10 +121,12 @@ router.get('/usr/:username', function(req, res) {
             return console.log(e);
         result.isFollowing = o;
         AM.getUserInfo(req.param('username'), function(e, o) {
-            if (e != null)
+            if (e != null || result.fullname != null){
                 return console.log(e);
-            result.fullname = o.name;
-            res.status(200).send(result).end();
+            } else {
+                result.fullname = o.name;
+                res.status(200).send(result).end();
+            }
         });
     });
 });
@@ -133,7 +135,6 @@ router.get('/usr/:username/feed', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
-    app.userlineState = -1;
     AM.getUserlines(req.param('username'), function(err, o){
         if (err != null)
             return console.log(err);
@@ -198,7 +199,7 @@ router.get('/newsFeed/:offset', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
-    AM.getUserTimelines(req.session.user.username, function(err, o){
+    AM.getUserTimelines(req.session.user.username, req.param('offset'), function(err, o){
         if (err != null)
             return console.log(err);
         res.status(200).send(o).end();

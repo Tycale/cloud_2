@@ -2,6 +2,7 @@ var crypto 		= require('crypto');
 var moment 		= require('moment');
 var app = require('../app');
 var _ = require('underscore');
+var TimeUuid = require('cassandra-driver').types.TimeUuid;
 
 var collectionName = "Users";
 var getUser = "SELECT * FROM twitter.Users WHERE username=?";
@@ -180,16 +181,46 @@ exports.isFollowing = function(follower, followed, callback)
 
 /* get User tweets */
 
-exports.getUserTimelines = function(username, callback) {
+var getTweets = function(listTweetid, callback){
+    var getTweetReq = "SELECT tweetid, username, author, body, dateOf(tweetid) AS created_at FROM twitter.Tweets WHERE tweetid IN ?";
+    app.db.execute(getTweetReq, [ listTweetid ], function(e, result) {
+        if (result && result.rows.length > 0) {
+            callback(null, result.rows);
+        }
+        else{
+            callback(e, null);
+        }
+    });
+};
+
+var getXLine = function(table, username, offset, callback) {
+    var offReq = 'LIMIT 10';
+    var query = [ username ];
+
+    if (offset != 'null') {
+        offReq = ' AND tweetid <  ' + offset + ' ' + offReq;
+    }
+
+    var getTweetidReq = "SELECT tweetid FROM twitter." + table + " WHERE username=? " + offReq;
+    app.db.execute(getTweetidReq, query, function(e, result) {
+        if (result && result.rows.length > 0) {
+            var listTweetid = _(result.rows).map(function(n){return n.tweetid});
+            getTweets(listTweetid, callback);
+        }
+        else{
+            callback(e, null);
+        }
+    });
+};
+
+exports.getUserTimelines = function(username, offset, callback) {
 	// HINT:
 	// Query to get all the tweets from the followed accounts of a user indentified by username.
 	// If the query is successful:
 	// Invoke callback(null, tweets) where tweets are the feed from all followed accounts.
 	// If the query fails:
 	// Invoke callback(e, null)
-    var getReq = "SELECT tweetid FROM twitter.Timeline WHERE username = ?";
-    callback('', null)
-
+    getXLine("Timeline", username, offset, callback);
 };
 
 exports.getUserlines = function(username, callback) {
@@ -199,7 +230,7 @@ exports.getUserlines = function(username, callback) {
 	// Invoke callback(null, tweets) where tweets are all the tweet of the account identified by username.
 	// If the query fails:
 	// Invoke callback(e, null)
-    callback('', null)
+    getXLine("Userline", username, 'null', callback);
 };
 
 /* get User tweets */

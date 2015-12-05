@@ -59,7 +59,6 @@ async.series([
             'tweetid timeuuid,' +
             'username text,' +
             'author text,' +
-            'created_at timestamp,' +
             'body text,' +
             'PRIMARY KEY(tweetid));';
         client.execute(query, next);
@@ -69,7 +68,8 @@ async.series([
         var query = 'CREATE TABLE IF NOT EXISTS twitter.Timeline (' +
             'tweetid timeuuid,' +
             'username text,' +
-            'PRIMARY KEY (username, tweetid));';
+            'PRIMARY KEY (username, tweetid))' +
+            'WITH CLUSTERING ORDER BY (tweetid DESC);';
         client.execute(query, next);
     },
 
@@ -77,7 +77,8 @@ async.series([
         var query = 'CREATE TABLE IF NOT EXISTS twitter.Userline (' +
             'tweetid timeuuid,' +
             'username text,' +
-            'PRIMARY KEY (username, tweetid));';
+            'PRIMARY KEY (username, tweetid))' +
+            'WITH CLUSTERING ORDER BY (tweetid DESC);';
         client.execute(query, next);
     },
 
@@ -95,17 +96,17 @@ async.series([
                 salt += set[p];
             }
             return salt;
-        }
+        };
 
         var md5 = function(str) {
             return crypto.createHash('md5').update(str).digest('hex');
-        }
+        };
 
         var saltAndHash = function(pass, callback)
         {
             var salt = generateSalt();
             callback(salt + md5(pass + salt));
-        }
+        };
 
         var upsertUser = 'INSERT INTO twitter.Users (username, name, pass) '
             + 'VALUES(?, ?, ?);';
@@ -146,8 +147,8 @@ async.series([
 
         var getFollowers = 'SELECT have_follower FROM twitter.BackwardFollowing WHERE username=?';
 
-        var upsertTweet = 'INSERT INTO twitter.Tweets (tweetid, username, author, created_at, body) '
-            + 'VALUES(?, ?, ?, ?, ?);';
+        var upsertTweet = 'INSERT INTO twitter.Tweets (tweetid, username, author, body) '
+            + 'VALUES(?, ?, ?, ?);';
         var upsertTimeline = 'INSERT INTO twitter.Timeline (tweetid, username) '
             + 'VALUES(?, ?);';
         var upsertUserline = 'INSERT INTO twitter.Userline (tweetid, username) '
@@ -158,10 +159,10 @@ async.series([
         t.on('data', function(line) {
             try {
                 var obj = JSON.parse(line);
-                obj.tweetid = uuid.v1();
                 obj.created_at = new Date(Date.parse(obj.created_at));
+                obj.tweetid = uuid.v1({'msecs': obj.created_at.getTime()});
                 client.execute(upsertTweet,
-                    [obj.tweetid, obj.username, obj.name, obj.created_at, obj.text],
+                    [obj.tweetid, obj.username, obj.name, obj.text],
                     afterExecution('Error:', 'Tweet ' + obj.tweetid + ' upserted.'));
 
                 /////////
