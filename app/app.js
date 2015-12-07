@@ -11,6 +11,8 @@ var AM = require('./manager/account-manager.js');
 var TM = require('./manager/tweet-manager.js');
 var cassandra = require('cassandra-driver');
 var async = require('async');
+var cluster = require('cluster');
+var os = require('os');
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -85,15 +87,24 @@ app.use(function(err, req, res, next) {
 
 // 1) Connect to Cassandra
 // 2) Start the HTTP server
-app.db = new cassandra.Client( { contactPoints : [ '127.0.0.1' ] } );
-app.db.connect(function(err, result) {
-    console.log('Connected.');
 
-    var server = app.listen(3002, function () {
-        var host = server.address().address;
-        var port = server.address().port;
-        console.log('Listening at http://%s:%s', host, port);
-    });
-});
+var cores = os.cpus().length;
 
+if (cluster.isMaster) {
+  for (var i = 0; i < cores; i++) {
+    cluster.fork();
+  }
+}
+else {
+  app.db = new cassandra.Client( { contactPoints : [ '127.0.0.1' ] } );
+  app.db.connect(function(err, result) {
+      console.log('Connected.');
+
+      var server = app.listen(3002, function () {
+          var host = server.address().address;
+          var port = server.address().port;
+          console.log('Listening at http://%s:%s', host, port);
+      });
+  });
+}
 ////////////////////////////////////////////////////////////////////////////////
