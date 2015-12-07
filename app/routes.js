@@ -105,7 +105,6 @@ router.post('/validateSubscription', function(req, res) {
 
 router.get('/usr', function(req, res) {
     res.render('profile', {});
-    app.userlineState = -1;
 });
 
 /** Return informations about user **/
@@ -117,15 +116,17 @@ router.get('/usr/:username', function(req, res) {
     var username= req.session.user.username;
     var result = {isFollowing: false, fullname: ""};
 
-    AM.isFollowing(username, req.param('username'), function(e, o) {
+    AM.isFollowing(username, req.params.username, function(e, o) {
         if (e != null)
             return console.log(e);
         result.isFollowing = o;
         AM.getUserInfo(req.param('username'), function(e, o) {
-            if (e != null)
+            if (e != null || result.fullname != null){
                 return console.log(e);
-            result.fullname = o.fullname;
-            res.status(200).send(result).end();
+            } else {
+                result.fullname = o.name;
+                res.status(200).send(result).end();
+            }
         });
     });
 });
@@ -134,8 +135,7 @@ router.get('/usr/:username/feed', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
-    app.userlineState = -1;
-    AM.getUserlines(req.param('username'), function(err, o){
+    AM.getUserlines(req.params.username, function(err, o){
         if (err != null)
             return console.log(err);
         res.status(200).send(o).end();
@@ -146,12 +146,22 @@ router.get('/usr/:username/following', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
+    AM.getFollowing(req.params.username, function(e, o){
+        if (e != null)
+            return console.log(e);
+        res.status(200).send(o).end();
+    });
 });
 
 router.get('/usr/:username/followers', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
+    AM.getFollowers(req.params.username, function(e, o){
+        if (e != null)
+            return console.log(e);
+        res.status(200).send(o).end();
+    });
 });
 
 router.get('/usr/:username/follow', function(req, res) {
@@ -159,7 +169,7 @@ router.get('/usr/:username/follow', function(req, res) {
         res.status(403).send("not authentificated").end();
     }
     var username= req.session.user.username;
-    AM.follow(username, req.param('username'), function(e, o) {
+    AM.follow(username, req.params.username, function(e, o) {
         if (e != null)
             return console.log(e);
         res.status(200).end();
@@ -171,7 +181,7 @@ router.get('/usr/:username/unfollow', function(req, res) {
         res.status(403).send("not authentificated").end();
     }
     var username= req.session.user.username;
-    AM.unfollow(username, req.param('username'), function(e, o) {
+    AM.unfollow(username, req.params.username, function(e, o) {
         if (e != null)
             return console.log(e);
         res.status(200).end();
@@ -183,14 +193,13 @@ router.get('/usr/:username/unfollow', function(req, res) {
 
 router.get('/home', function(req, res) {
      res.render('home', {});
-     app.timelineState = -1;
 });
 
 router.get('/newsFeed/:offset', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
-    AM.getUserTimelines(req.session.user.username, function(err, o){
+    AM.getUserTimelines(req.session.user.username, req.params.offset, function(err, o){
         if (err != null)
             return console.log(err);
         res.status(200).send(o).end();
@@ -206,14 +215,13 @@ router.post('/newTweet', function(req, res) {
     if (req.param('tweet').length <= 4) {
         res.status(403).send("Tweet too short").end();
     }
-    var data = {    body: req.param('tweet'), 
-                    username: req.session.user.username};
-    if(req.param('imageId') != 'null')
-        data.image = req.param('imageId');
+    var data = {  body: req.param('tweet'),
+        username: req.session.user.username};
 
     TM.newTweet(data, function(e, o) {
-        if (e != null)
-            return console.log(e);
+        if (e != null){
+            return console.log('error sending tweet ' + e);
+        }
         res.status(200).end();
     });
 });

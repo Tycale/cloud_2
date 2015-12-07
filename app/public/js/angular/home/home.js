@@ -26,21 +26,25 @@ function($scope, $http, $rootScope, $location, $window, Twitter) {
 
 	$scope.tweets = [];
     $scope.fullLoaded = false;
-    $scope.loading = false; 
+    $scope.loading = false;
+    $scope.offset = null;
     $scope.getTweets = function() {
         if (!$scope.fullLoaded && !$scope.loading) {
-            $scope.loading = true; 
-        	$http.get('/newsFeed/' + $scope.tweets.length).
+            $scope.loading = true;
+        	$http.get('/newsFeed/' + $scope.offset).
                 success(function(data, status, headers, config) {
                 	$scope.tweets = $scope.tweets.concat(data);
-                    if (data.length == 0)
+                    if (data.length == 0){
                         $scope.fullLoaded = true;
+                    } else {
+                        $scope.offset = data[0].tweetid;
+                    }
                 	angular.forEach ($scope.tweets, function (tweet, key) {
                         var date = new Date(tweet.created_at);
-                        if (date != 'undefined')
-                		  tweet.display_time =  date.getDate() + " /" + 
-                                                (date.getMonth() + 1) + "/" + date.getFullYear() + 
-                                                ' at ' + date.getHours() + ':' + date.getMinutes();
+                        if (date != 'undefined'){
+                		  tweet.display_time =  date.getDate() + " /" +
+                                                (date.getMonth() + 1) + "/" + date.getFullYear() +
+                                                ' at ' + date.getHours() + ':' + date.getMinutes();}
                 	});
                     $scope.loading = false; 
                 });
