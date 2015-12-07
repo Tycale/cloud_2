@@ -18,6 +18,8 @@ exports.newTweet = function(data, callback)
         producer = new Producer(client);
     data.tweetid = new TimeUuid().toString();
 
+    producer.on('error', function (err) {console.log('Error connecting kafka: ' + err);});
+
     // HINT:
     // The data object at this point contains the new tweeet
     // It has these attributes:
@@ -31,11 +33,10 @@ exports.newTweet = function(data, callback)
     // we suggest you use async.parallel.
     // This function in the end must call callback(err, data)
 
-
     async.parallel([
         function(cb){
             var payloads = [
-                { topic: 'tweet_cassandra', messages: JSON.stringify(data), partition: 0 },
+                { topic: 'tweetscassandra', messages: JSON.stringify(data), partition: 0 },
             ];
             producer.on('ready', function () {
                 producer.send(payloads, cb);
@@ -43,6 +44,5 @@ exports.newTweet = function(data, callback)
         },
 
     ], function(error, res){ callback(error, res)});
-
 
 };
