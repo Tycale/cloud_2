@@ -12,6 +12,7 @@ var TM = require('./manager/tweet-manager.js');
 var cassandra = require('cassandra-driver');
 var async = require('async');
 var cluster = require('cluster');
+var os = require('os');
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -87,8 +88,10 @@ app.use(function(err, req, res, next) {
 // 1) Connect to Cassandra
 // 2) Start the HTTP server
 
+var cores = os.cpus().length;
+
 if (cluster.isMaster) {
-  for (var i = 0; i < 4; i++) {
+  for (var i = 0; i < cores; i++) {
     cluster.fork();
   }
 }
