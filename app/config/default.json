@@ -1,0 +1,17 @@
+{
+  "Redis": {
+    "host": "127.0.0.1",
+    "port": 6379,
+    "prefix": "twitter:"
+  },
+  "App": {
+    "port": 3002
+  },
+  "Session": {
+    "secretToken": "Efm4RJRasjUwB2kW42aTUpf26ux66SRRMFsCHCr92hnsjLQb52zHzd",
+    "maxAge": 10800000
+  },
+  "Cassandra": {
+    "contactPoints": [ "127.0.0.1" ]
+  }
+}

@@ -5,7 +5,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var session = require('express-session');
+var expressSession = require('express-session');
+var RedisStore = require('connect-redis')(expressSession);
 var assert = require('assert');
 var AM = require('./manager/account-manager.js');
 var TM = require('./manager/tweet-manager.js');
@@ -13,6 +14,7 @@ var cassandra = require('cassandra-driver');
 var async = require('async');
 var cluster = require('cluster');
 var os = require('os');
+var config = require('config');
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -21,17 +23,26 @@ app.set('env', 'development');
 ////////////////////////////////////////////////////////////////////////////////
 // MIDDLEWARE
 
+var redisOptions = {
+    host: config.get('Redis.host'),
+    port: config.get('Redis.port'),
+    prefix: config.get('Redis.prefix')
+};
+
 app.use(cookieParser());
-// Http only false to allow connection in ajax
-// XSS leak but not the time to implement
-// Nice session mechanism
-// Store the session data on mongo
-// to make the sessions avalaible
-// on all the nodeJs nodes.
-app.use(session({ secret: 'super-duper-secret-secret',
-                  saveUninitialized: true,
-                  cookie: { httpOnly: false },
-                  resave: true}));
+
+var sessionStore = new RedisStore(redisOptions);
+
+var expressSessionOptions = {
+    secret: config.get('Session.secretToken'),
+    store: sessionStore,
+    maxAge: config.get('Session.maxAge'),
+    resave: false,
+    saveUninitialized: true
+};
+
+app.use(expressSession(expressSessionOptions));
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -96,11 +107,11 @@ if (cluster.isMaster) {
   }
 }
 else {
-  app.db = new cassandra.Client( { contactPoints : [ '127.0.0.1' ] } );
+  app.db = new cassandra.Client( { contactPoints : config.get('Cassandra.contactPoints') } );
   app.db.connect(function(err, result) {
       console.log('Connected.');
 
-      var server = app.listen(3002, function () {
+      var server = app.listen(config.get('App.port'), function () {
           var host = server.address().address;
           var port = server.address().port;
           console.log('Listening at http://%s:%s', host, port);
