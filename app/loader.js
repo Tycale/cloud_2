@@ -7,6 +7,7 @@ var byline = require('byline');
 var crypto = require('crypto');
 var assert = require('assert');
 
+
 var client = new cassandra.Client( { contactPoints : [ '127.0.0.1' ] } );
 client.connect(function(err, result) {
     console.log('Connected.');
