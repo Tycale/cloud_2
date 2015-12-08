@@ -16,5 +16,8 @@
   },
   "Cluster": {
     "nbInstances": -1
+  },
+  "Zookeeper": {
+    "address": "127.0.0.1:2181,127.0.0.1:2181"
   }
 }

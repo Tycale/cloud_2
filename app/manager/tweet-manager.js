@@ -1,24 +1,26 @@
 var app = require('../app');
 var uuid = require('node-uuid');
 var async = require('async');
+var config = require('config');
 var kafka = require('kafka-node'),
-    Producer = kafka.Producer;
+    Producer = kafka.Producer,
+    HighLevelProducer = kafka.HighLevelProducer;
 
-var KeyedMessage = kafka.KeyedMessage;
 
 var TimeUuid = require('cassandra-driver').types.TimeUuid;
 
 
-var km = new KeyedMessage('key', 'message');
-
 /* add a tweet*/
 exports.newTweet = function(data, callback)
 {
-    var client = new kafka.Client(),
-        producer = new Producer(client);
-    data.tweetid = new TimeUuid().toString();
+    var client = new kafka.Client(config.get('Zookeeper.address')),
+        producer = new HighLevelProducer(client);
 
-    producer.on('error', function (err) {console.log('Error connecting kafka: ' + err);});
+    producer.on('error', function(err){
+        console.log("Error Zookeeper :" + err);
+    });
+
+    data.tweetid = new TimeUuid().toString();
 
     // HINT:
     // The data object at this point contains the new tweeet
@@ -40,6 +42,10 @@ exports.newTweet = function(data, callback)
             ];
             producer.on('ready', function () {
                 producer.send(payloads, cb);
+                if(reconnectInterval!=null) {
+                    clearTimeout(reconnectInterval);
+                    reconnectInterval =null;
+                }
             });
         },
 

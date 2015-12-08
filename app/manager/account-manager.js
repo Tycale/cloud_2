@@ -208,7 +208,7 @@ var getXLine = function(table, username, offset, callback, limit) {
     }
 
     if (offset != 'null') {
-        offReq = ' AND tweetid <  ' + offset;
+        offReq = ' AND tweetid <  ' + offset + offReq;
     }
 
     var getTweetidReq = "SELECT tweetid FROM twitter." + table + " WHERE username=? " + offReq;
