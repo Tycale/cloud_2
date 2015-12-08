@@ -11,9 +11,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.net.InetAddress;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -88,7 +86,6 @@ public class ConsumerThread implements Runnable {
         cluster.close();
         System.out.println("Shutting down Thread: " + threadNumber);
     }
-
 
 
     public Boolean insertTweetToCassandra(UUID tweetid, String username, String author, String tweet) {
