@@ -121,7 +121,7 @@ router.get('/usr/:username', function(req, res) {
             return console.log(e);
         result.isFollowing = o;
         AM.getUserInfo(req.param('username'), function(e, o) {
-            if (e != null || result.fullname != null){
+            if (e != null){
                 return console.log(e);
             } else {
                 result.fullname = o.name;
@@ -216,7 +216,8 @@ router.post('/newTweet', function(req, res) {
         res.status(403).send("Tweet too short").end();
     }
     var data = {  body: req.param('tweet'),
-        username: req.session.user.username};
+        username: req.session.user.username,
+        author: req.session.user.name};
 
     TM.newTweet(data, function(e, o) {
         if (e != null){

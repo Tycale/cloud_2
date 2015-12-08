@@ -123,8 +123,8 @@ exports.follow = function(follower, followed, callback)
     var insertBackwardFollowing = "INSERT INTO twitter.BackwardFollowing (username, have_follower, date) VALUES(?, ?, ?)";
     var date = new Date();
     var queries = [
-        { query: insertBackwardFollowing, params: [follower, followed, date]},
-        { query: insertForwardFollowing, params: [followed, follower, date]},
+        { query: insertBackwardFollowing, params: [followed, follower, date]},
+        { query: insertForwardFollowing, params: [follower, followed, date]},
         ];
     app.db.batch(queries, { prepare: true}, function(e) {
         if (e == null) {
@@ -150,8 +150,8 @@ exports.unfollow = function(follower, followed, callback)
     var deleteForwardFollowing = "DELETE FROM twitter.ForwardFollowing WHERE username=? AND follower=?";
     var deleteBackwardFollowing = "DELETE FROM twitter.BackwardFollowing WHERE username=? AND have_follower=?";
     var queries = [
-        { query: deleteBackwardFollowing, params: [follower, followed]},
-        { query: deleteForwardFollowing, params: [followed, follower]},
+        { query: deleteBackwardFollowing, params: [followed, follower]},
+        { query: deleteForwardFollowing, params: [follower, followed]},
     ];
     app.db.batch(queries, { prepare: true}, function(e) {
         if (e == null) {
@@ -177,10 +177,10 @@ exports.isFollowing = function(follower, followed, callback)
     var isFollowingReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username=? AND have_follower=?";
     app.db.execute(isFollowingReq, [ followed, follower ], function(e, result) {
         if (result && result.rows.length > 0) {
-            callback(null, follower);
+            callback(null, true);
         }
         else{
-            callback(e, null);
+            callback(e, false);
         }
     });
 };
@@ -200,16 +200,18 @@ var getTweets = function(listTweetid, callback){
     });
 };
 
-var getXLine = function(table, username, offset, callback) {
-    var offReq = 'LIMIT 10';
-    var query = [ username ];
+var getXLine = function(table, username, offset, callback, limit) {
+    var offReq = '';
+    if(limit != null){
+        offReq = ' LIMIT ' + limit;
+    }
 
     if (offset != 'null') {
-        offReq = ' AND tweetid <  ' + offset + ' ' + offReq;
+        offReq = ' AND tweetid <  ' + offset;
     }
 
     var getTweetidReq = "SELECT tweetid FROM twitter." + table + " WHERE username=? " + offReq;
-    app.db.execute(getTweetidReq, query, function(e, result) {
+    app.db.execute(getTweetidReq, [ username ], function(e, result) {
         if (result && result.rows.length > 0) {
             var listTweetid = _(result.rows).map(function(n){return n.tweetid});
             getTweets(listTweetid, callback);
@@ -227,7 +229,7 @@ exports.getUserTimelines = function(username, offset, callback) {
 	// Invoke callback(null, tweets) where tweets are the feed from all followed accounts.
 	// If the query fails:
 	// Invoke callback(e, null)
-    getXLine("Timeline", username, offset, callback);
+    getXLine("Timeline", username, offset, callback, 10);
 };
 
 exports.getUserlines = function(username, callback) {
@@ -237,11 +239,10 @@ exports.getUserlines = function(username, callback) {
 	// Invoke callback(null, tweets) where tweets are all the tweet of the account identified by username.
 	// If the query fails:
 	// Invoke callback(e, null)
-    getXLine("Userline", username, 'null', callback);
+    getXLine("Userline", username, 'null', callback, null);
 };
 
 /* get User tweets */
-
 exports.getUserInfo = function(username, callback) {
 	// HINT:
 	// Query to get information of a user indentified by username.
@@ -249,10 +250,11 @@ exports.getUserInfo = function(username, callback) {
 	// Invoke callback(null, userinfo).
 	// If the query fails:
 	// Invoke callback(e, null)
+
     var getUserInfoReq = "SELECT name FROM twitter.users WHERE username = ?";
     app.db.execute(getUserInfoReq, [ username ], function(e, result) {
-        if (result && result.rows.length > 0) {
-            callback(null, result.rows[0]);
+        if (result.rows.length > 0) {
+            callback(null, result.rows[0].name);
         }
         else{
             callback(e, null);

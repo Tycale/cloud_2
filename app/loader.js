@@ -6,9 +6,9 @@ var fs = require('fs');
 var byline = require('byline');
 var crypto = require('crypto');
 var assert = require('assert');
+var config = require('config');
 
-
-var client = new cassandra.Client( { contactPoints : [ '127.0.0.1' ] } );
+var client = new cassandra.Client( { contactPoints : config.get('Cassandra.contactPoints') } );
 client.connect(function(err, result) {
     console.log('Connected.');
 });
