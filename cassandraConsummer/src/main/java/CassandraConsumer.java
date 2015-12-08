@@ -80,23 +80,26 @@ public class CassandraConsumer {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        String zooKeeper = args[0];
-        String groupId = args[1];
-        String topic = args[2];
-        int threads = Integer.parseInt(args[3]);
-        String contactPoints = args[4];
-        String dcName = args[5];
-
-        if(args.length != 6){
+        if(args.length < 1){
             System.err.println("Usage : java -jar casasndraConsumer.jar zookeeper_address kafka_group_id kafka_topic number_of_consumer_threads kafka_contactPoints kafka_datacenter_name");
             System.err.println("Exemple : java -jar casasndraConsumer.jar localhost:2181/ 0 tweetscassandra 1 127.0.0.1 datacenter1");
         }
+        else {
 
-        Logger.getGlobal().warning("Zookeeper : " + zooKeeper + " - groupID : " + groupId + " - topic : " + topic + " - threads: " + threads + " - contactPoints: " + contactPoints + " - datacenter name: " + dcName);
+            String zooKeeper = args[0];
+            String groupId = args[1];
+            String topic = args[2];
+            int threads = Integer.parseInt(args[3]);
+            String contactPoints = args[4];
+            String dcName = args[5];
 
-        CassandraConsumer threadedConsumers = new CassandraConsumer(zooKeeper, groupId, topic, contactPoints, dcName);
-        threadedConsumers.run(threads);
 
-        Thread.sleep(365*24*60*60*1000);
+            Logger.getGlobal().warning("Zookeeper : " + zooKeeper + " - groupID : " + groupId + " - topic : " + topic + " - threads: " + threads + " - contactPoints: " + contactPoints + " - datacenter name: " + dcName);
+
+            CassandraConsumer threadedConsumers = new CassandraConsumer(zooKeeper, groupId, topic, contactPoints, dcName);
+            threadedConsumers.run(threads);
+
+            Thread.sleep(365 * 24 * 60 * 60 * 1000);
+        }
     }
 }
