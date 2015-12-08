@@ -1,4 +1,4 @@
-group 'CassandraConsummer'
+group 'CassandraConsumer'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
@@ -29,5 +29,7 @@ run {
     systemProperties System.getProperties()
 
     /* Need to split the space-delimited value in the exec.args */
-    args System.getProperty("exec.args").split()
+    if(System.getProperty("exec.args") != null) {
+        args System.getProperty("exec.args").split()
+    }
 }

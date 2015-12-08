@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module external.linked.project.id="CassandraConsummer" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$" external.system.id="GRADLE" external.system.module.group="CassandraConsummer" external.system.module.version="1.0-SNAPSHOT" type="JAVA_MODULE" version="4">
+<module external.linked.project.id="CassandraConsumer" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$" external.system.id="GRADLE" external.system.module.group="CassandraConsumer" external.system.module.version="1.0-SNAPSHOT" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/build/classes/main" />
     <output-test url="file://$MODULE_DIR$/build/classes/test" />
@@ -28,7 +28,6 @@
     <orderEntry type="library" exported="" name="Gradle: junit:junit:4.10" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.hamcrest:hamcrest-core:1.1" level="project" />
     <orderEntry type="library" exported="" name="Gradle: jline:jline:0.9.94" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: com.google.guava:guava:16.0.1" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.slf4j:slf4j-simple:1.7.13" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.slf4j:slf4j-api:1.7.13" level="project" />
     <orderEntry type="library" exported="" name="Gradle: com.datastax.cassandra:cassandra-driver-core:2.2.0-rc3" level="project" />
@@ -38,7 +37,6 @@
     <orderEntry type="library" exported="" name="Gradle: io.netty:netty-transport:4.0.27.Final" level="project" />
     <orderEntry type="library" exported="" name="Gradle: io.netty:netty-codec:4.0.27.Final" level="project" />
     <orderEntry type="library" exported="" name="Gradle: io.netty:netty-common:4.0.27.Final" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: com.google.collections:google-collections:1.0-rc2" level="project" />
     <orderEntry type="module-library">
       <library name="Gradle: log4j:log4j:1.2.16">
         <CLASSES>
@@ -47,6 +45,17 @@
         <JAVADOC />
         <SOURCES>
           <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/log4j/log4j/1.2.16/bf945d1dc995be7fe64923625f842fbb6bf443be/log4j-1.2.16-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Gradle: com.google.guava:guava:18.0">
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/18.0/cce0823396aa693798f8882e64213b1772032b09/guava-18.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/18.0/ad97fe8faaf01a3d3faacecd58e8fa6e78a973ca/guava-18.0-sources.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>
