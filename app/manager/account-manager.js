@@ -192,7 +192,8 @@ var getTweets = function(listTweetid, callback){
     var getTweetReq = "SELECT tweetid, username, author, body, dateOf(tweetid) AS created_at FROM twitter.Tweets WHERE tweetid IN ?";
     app.db.execute(getTweetReq, [ listTweetid ], function(e, result) {
         if (result && result.rows.length > 0) {
-            callback(null, result.rows);
+
+            callback(null, _(result.rows).sortBy(function(row){return -(new Date(row.created_at)).getTime()}));
         }
         else{
             callback(e, null);

@@ -37,7 +37,7 @@ function($scope, $http, $rootScope, $location, $window, Twitter) {
                     if (data.length == 0){
                         $scope.fullLoaded = true;
                     } else {
-                        $scope.offset = data[0].tweetid;
+                        $scope.offset = data[data.length-1].tweetid;
                     }
                 	angular.forEach ($scope.tweets, function (tweet, key) {
                         var date = new Date(tweet.created_at);
