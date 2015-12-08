@@ -11,13 +11,16 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 public class ConsumerThread implements Runnable {
     private ConsumerConnector consumer;
     private KafkaStream<byte[], byte[]> stream;
     private int threadNumber;
-    private long delay;
 
     private static Cluster cluster;
     private static Session session;
@@ -26,18 +29,24 @@ public class ConsumerThread implements Runnable {
     private final PreparedStatement tweetinsert;
     private final PreparedStatement getFollowers;
 
-    public ConsumerThread(ConsumerConnector consumer, KafkaStream<byte[], byte[]> stream, int threadNumber, long delay) {
+    public ConsumerThread(ConsumerConnector consumer, KafkaStream<byte[], byte[]> stream, int threadNumber, String contactPoints, String dcName) {
         this.consumer = consumer;
         this.threadNumber = threadNumber;
         this.stream = stream;
-        this.delay = delay;
 
-        this.cluster = Cluster
-                .builder()
-                .addContactPoint("127.0.0.1") // TODO : Configuration file
+        List<String> contactPointsList = Arrays.asList(contactPoints.split(","));
+
+        Cluster.Builder clusterBuilder = Cluster.builder();
+
+        for(String address : contactPointsList){
+            clusterBuilder.addContactPoint(address);
+        }
+
+
+        this.cluster = clusterBuilder
                 .withRetryPolicy(DefaultRetryPolicy.INSTANCE)
                 .withLoadBalancingPolicy(
-                        new TokenAwarePolicy(new DCAwareRoundRobinPolicy("datacenter1"))) // TODO : Configuration file
+                        new TokenAwarePolicy(new DCAwareRoundRobinPolicy(dcName)))
                 .withReconnectionPolicy(new ConstantReconnectionPolicy(100L))
                 .build();
 
@@ -91,26 +100,20 @@ public class ConsumerThread implements Runnable {
 
         // get followers that follow username
         // SELECT have_follower FROM twitter.BackwardFollowing WHERE username=?
-
-
         BoundStatement boundStatementFollowers = new BoundStatement(getFollowers);
         ResultSet FollowersList = session.execute(boundStatementFollowers.bind(username));
 
 
         // Insert the tweet
-
         BoundStatement boundStatement = new BoundStatement(tweetinsert);
         bs.add(boundStatement.bind(tweetid,username, author,tweet));
 
 
         // Insert the tweet in the userline
-
         BoundStatement timelinebind = new BoundStatement(userTimeline);
         bs.add(timelinebind.bind(tweetid,username));
 
         // Insert the tweet in timelines
-
-
         for (Row row : FollowersList) {
             String follower = row.getString("have_follower");
             BoundStatement followertimelinebind = new BoundStatement(followerTimeLine);
