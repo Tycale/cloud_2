@@ -40,14 +40,14 @@ router.get('/connection', function(req, res) {
 // Login / Logout
 
 router.post('/validate', function(req, res) {
-    if (    req.param('username').length > 20 || req.param('username').length < 4  
-        || !req.param('username').match("^([-_A-z0-9]){3,}$")
-        ||  req.param('pass').length > 20 || req.param('pass').length < 4 ) {
+    if (    req.body.username.length > 20 || req.body.username.length < 4  
+        || !req.body.username.match("^([-_A-z0-9]){3,}$")
+        ||  req.body.pass.length > 20 || req.body.pass.length < 4 ) {
             res.status(403).send("Informations entered are incompletes!").end();
             return;
     }
     // attempt manual login & open collection Users
-    AM.manualLogin(req.param('username'), req.param('pass'), function(e, o) {
+    AM.manualLogin(req.body.username, req.body.pass, function(e, o) {
         if (!o) {
             if (e == 'user-not-found')
                 res.status(403).send("User not found").end();
@@ -81,9 +81,9 @@ router.get('/isConnected', function(req, res) {
 
 router.post('/validateSubscription', function(req, res) {
     //Verify informations
-    var username = req.param('username');
-    var fullname = req.param('fullname');
-    var pass = req.param('pass');
+    var username = req.body.username;
+    var fullname = req.body.fullname;
+    var pass = req.body.pass;
     if (    username.length > 20 || username.length < 4  || !username.match("^([-_A-z0-9]){3,}$")
         ||  fullname.length > 20 || fullname.length < 4 || !fullname.match("^([- _A-z0-9]){3,}$")
         ||  pass.length > 20 || pass.length < 4 ) {
@@ -120,7 +120,7 @@ router.get('/usr/:username', function(req, res) {
         if (e != null)
             return console.log(e);
         result.isFollowing = o;
-        AM.getUserInfo(req.param('username'), function(e, o) {
+        AM.getUserInfo(req.body.username, function(e, o) {
             if (e != null){
                 return console.log(e);
             } else {
@@ -212,10 +212,10 @@ router.post('/newTweet', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
-    if (req.param('tweet').length <= 4) {
+    if (req.body.tweet.length <= 4) {
         res.status(403).send("Tweet too short").end();
     }
-    var data = {  body: req.param('tweet'),
+    var data = {  body: req.body.tweet,
         username: req.session.user.username,
         author: req.session.user.name};
 

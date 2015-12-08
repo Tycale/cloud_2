@@ -8,13 +8,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 
 public class CassandraConsumer {
     private final ConsumerConnector consumer;
     private final String topic;
     private ExecutorService executor;
-    private long delay;
+    private String contactPoints;
+    private String dcName;
 
     /**
      *
@@ -22,10 +24,11 @@ public class CassandraConsumer {
      * @param groupId
      * @param topic
      */
-    public CassandraConsumer(String zookeeper, String groupId, String topic, long delay) {
+    public CassandraConsumer(String zookeeper, String groupId, String topic, String contactPoints, String dcName) {
         consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(zookeeper, groupId));
         this.topic = topic;
-        this.delay = delay;
+        this.contactPoints = contactPoints;
+        this.dcName = dcName;
     }
 
     public void shutdown() {
@@ -51,7 +54,7 @@ public class CassandraConsumer {
         executor = Executors.newFixedThreadPool(numThreads);
         int threadNumber = 0;
         for (final KafkaStream<byte[], byte[]> stream : streams) {
-            executor.submit(new ConsumerThread(consumer, stream, threadNumber, delay));
+            executor.submit(new ConsumerThread(consumer, stream, threadNumber, contactPoints, dcName));
             threadNumber++;
         }
     }
@@ -81,11 +84,15 @@ public class CassandraConsumer {
         String groupId = args[1];
         String topic = args[2];
         int threads = Integer.parseInt(args[3]);
-        long delay = Long.parseLong(args[4]);
-        CassandraConsumer example = new CassandraConsumer(zooKeeper, groupId, topic,delay);
+        String contactPoints = args[4];
+        String dcName = args[5];
+
+        Logger.getGlobal().warning("Zookeeper : " + zooKeeper + " - groupID : " + groupId + " - topic : " + topic + " - threads: " + threads + " - contactPoints: " + contactPoints + " - datacenter name: " + dcName);
+
+        CassandraConsumer example = new CassandraConsumer(zooKeeper, groupId, topic, contactPoints, dcName);
         example.run(threads);
 
-        Thread.sleep(24*60*60*1000);
+        Thread.sleep(365*24*60*60*1000);
 
         example.shutdown();
     }
