@@ -13,5 +13,8 @@
   },
   "Cassandra": {
     "contactPoints": [ "127.0.0.1" ]
+  },
+  "Cluster": {
+    "nbInstances": -1
   }
 }

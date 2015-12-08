@@ -99,7 +99,15 @@ app.use(function(err, req, res, next) {
 // 1) Connect to Cassandra
 // 2) Start the HTTP server
 
-var cores = os.cpus().length;
+var nbInstances = config.get('Cluster.nbInstances');
+
+if (nbInstances < 0) {
+  var cores = os.cpus().length;
+}
+
+else {
+  var cores = nbInstances;
+}
 
 if (cluster.isMaster) {
   for (var i = 0; i < cores; i++) {
