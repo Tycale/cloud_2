@@ -27,10 +27,7 @@
     <orderEntry type="library" exported="" name="Gradle: com.googlecode.json-simple:json-simple:1.1.1" level="project" />
     <orderEntry type="library" exported="" name="Gradle: junit:junit:4.10" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.hamcrest:hamcrest-core:1.1" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: log4j:log4j:1.2.15" level="project" />
     <orderEntry type="library" exported="" name="Gradle: jline:jline:0.9.94" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: javax.mail:mail:1.4" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: javax.activation:activation:1.1" level="project" />
     <orderEntry type="library" exported="" name="Gradle: com.google.guava:guava:16.0.1" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.slf4j:slf4j-simple:1.7.13" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.slf4j:slf4j-api:1.7.13" level="project" />
@@ -42,5 +39,16 @@
     <orderEntry type="library" exported="" name="Gradle: io.netty:netty-codec:4.0.27.Final" level="project" />
     <orderEntry type="library" exported="" name="Gradle: io.netty:netty-common:4.0.27.Final" level="project" />
     <orderEntry type="library" exported="" name="Gradle: com.google.collections:google-collections:1.0-rc2" level="project" />
+    <orderEntry type="module-library">
+      <library name="Gradle: log4j:log4j:1.2.16">
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/log4j/log4j/1.2.16/7999a63bfccbc7c247a9aea10d83d4272bd492c6/log4j-1.2.16.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/log4j/log4j/1.2.16/bf945d1dc995be7fe64923625f842fbb6bf443be/log4j-1.2.16-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>
