@@ -17,16 +17,24 @@
 			<form id="newTweet" novalidate>
 				<textarea name="text" my-maxLength="140" class="ribbitText" ng-model="tweet_content"></textarea>
 				<div>{{140 - tweet_content.length}} chars remaining (min 5 chars)</div>
-				<div ng-hide="uploading">
-			        <button id="select-file" class="btn-convert">Select an image (optional)</button>
-			        <input id="file-input" type="file" class="file-input" name="files[]">
-			    </div>
-			    <meter class="progressbar" ng-show="uploading" value="0.0"></meter>
 				<input ng-disabled="tweetIncomplete || !uploadComplete" type="submit" value="Tweet!" ng-click="send_tweet()" ng-enabled="sendTweetButton">
 			</form>
 			<div style="margin-left: 25px;" ng-show="tweetSent" class="alert alert-success" role="alert">Tweet sent !</div>
 			<div style="margin-left: 27px;" ng-show="uploadError" class="alert alert-warning-alt" role="alert" >An error happened: {{errorMessage}}</div>
 		</p>
+		<h1>Trendings hashtag</h1>
+		<p>
+		<div ng-repeat="topic in topics()" style="height: 20px;" class="topicWrapper">
+          <span class="name">
+				{{hashtag}}
+			  <span class="right">
+				  {{count}}
+			  </span>
+          </span>
+		</div>
+		</p>
+
+
 	</div>
 	
 	<div id="ribbits" class="panel left">

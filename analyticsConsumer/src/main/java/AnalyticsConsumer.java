@@ -23,6 +23,7 @@ import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import org.apache.storm.redis.bolt.RedisStoreBolt;
+import org.apache.storm.redis.common.config.JedisClusterConfig;
 import org.apache.storm.redis.common.config.JedisPoolConfig;
 
 import storm.kafka.*;
@@ -30,6 +31,9 @@ import storm.starter.bolt.*;
 
 import com.typesafe.config.ConfigFactory;
 
+import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -48,6 +52,7 @@ public class AnalyticsConsumer {
         BrokerHosts hosts = new ZkHosts(zooKeeper);
         SpoutConfig spoutConfig = new SpoutConfig(hosts, topic, "/" + topic, UUID.randomUUID().toString());
         spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
+        spoutConfig.stateUpdateIntervalMs = 2000;
         KafkaSpout kafkaSpout = new KafkaSpout(spoutConfig);
 
 
@@ -57,8 +62,17 @@ public class AnalyticsConsumer {
                     .setHost(conf.getString("Redis.host")).setPort(conf.getInt("Redis.port")).build();
             RedisBoltMapper storeMapper = new RedisBoltMapper();
             storeBolt = new RedisStoreBolt(poolConfig, storeMapper);
+        } else if(conf.getString("Redis.configuration").equals("cluster")){
+            Set<InetSocketAddress> nodes = new HashSet<>();
+            for (String hostPort : conf.getString("addresses").split(",")) {
+                String[] host_port = hostPort.split(":");
+                nodes.add(new InetSocketAddress(host_port[0], Integer.valueOf(host_port[1])));
+            }
+            JedisClusterConfig clusterConfig = new JedisClusterConfig.Builder().setNodes(nodes)
+                    .build();
+            RedisBoltMapper storeMapper = new RedisBoltMapper();
+            storeBolt = new RedisStoreBolt(clusterConfig, storeMapper);
         }
-
 
         builder.setSpout("spout", kafkaSpout, conf.getInt("App.kafka_parallel"));
         builder.setBolt("split", new SplitSentence(), conf.getInt("App.split_parallel")).shuffleGrouping("spout");
@@ -69,7 +83,7 @@ public class AnalyticsConsumer {
         builder.setBolt("redis", storeBolt).globalGrouping("totalRanker");
 
         Config stormConf = new Config();
-        stormConf.setDebug(true);
+        //stormConf.setDebug(true);
 
         if(!conf.getBoolean("App.local")){
             stormConf.setNumWorkers(workers);

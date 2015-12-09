@@ -10,6 +10,10 @@ var kafka = require('kafka-node');
 var formidable = require('formidable');
 var router = express.Router();
 var AWS = require('aws-sdk');
+var redis = require('redis');
+var config = require('config');
+var client = redis.createClient(config.get('Redis.port'), config.get('Redis.host'));
+
 // AWS.config.loadFromPath('./awsCredentials.json');
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,6 +207,27 @@ router.get('/newsFeed/:offset', function(req, res) {
         if (err != null)
             return console.log(err);
         res.status(200).send(o).end();
+    });
+});
+
+router.get('/trends/', function(req, res) {
+    if (req.session.user === null) {
+        res.status(403).send("not authentificated").end();
+    }
+    client.hgetall('trendings', function(err, data){
+        if (err != null)
+            return console.log(err);
+
+        console.dir(data);
+
+        var trends = [];
+        _(data.split('\n')).each(function(topic){
+            var two = topic.split('\t');
+            var hashtag = two[0];
+            var count = two[1];
+            trends.push({hashtag: hashtag, count: count});
+        });
+        res.status(200).send(trends).end();
     });
 });
 

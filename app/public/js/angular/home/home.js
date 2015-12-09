@@ -51,5 +51,10 @@ function($scope, $http, $rootScope, $location, $window, Twitter) {
         }
     };
 	$scope.sendTweetButton = true;
-
+    //$scope.topics = function(){
+    //    $http.get('/trends/').
+    //    success(function(data, status, headers, config) {
+    //        $scope.topics = data;
+    //    });
+    //}
 });
