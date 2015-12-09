@@ -191,7 +191,10 @@ async.series([
         });
         t.on('end', next);
     }
-], afterExecution('Error: ', 'Tables created.'));
+], function(err, res){
+        if(err == null) console.log("Tables created.");
+        process.exit();
+    });
 
 function afterExecution(errorMessage, successMessage) {
     return function (err, result) {
