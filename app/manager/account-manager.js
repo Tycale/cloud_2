@@ -10,16 +10,7 @@ var getUser = "SELECT * FROM twitter.Users WHERE username=?";
 var insertUser = "INSERT INTO twitter.Users (username, name, pass) "
             + "VALUES(?, ?, ?);";
 
-// <<<<<<< HEAD
-// // request for HINTS
-// var getfollowerReq = "SELECT follower FROM twitter.ForwardFollowing WHERE username = ?";
-// var getfollowingReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username = ?";
-// var ForwardFollowingReq = "INSERT INTO ";
-// =======
-//
-// >>>>>>> 637c9558957ecbcdac4b4b747251847c2bca7f65
 /* login validation methods */
-
 exports.autoLogin = function(user, pass, callback)
 {
 	app.db.execute(getUser, [ user ], function(e, result) {
@@ -39,7 +30,7 @@ exports.manualLogin = function(user, pass, callback)
 		if (result && result.rows.length == 0){
 			callback('user-not-found');
 		}
-		else{
+		else {
 			var o = result.rows[0];
 			validatePassword(pass, o.pass, function(err, res) {
 				if (res){
@@ -71,7 +62,6 @@ exports.addNewAccount = function(newData, callback)
 };
 
 /* Return Following, Followers */
-
 exports.getFollowers = function(username, callback) {
 	// HINT:
 	// Query the DB to obtain the list of followers of user identified by username
@@ -109,7 +99,6 @@ exports.getFollowing = function(username, callback) {
 };
 
 /* Follow user */
-
 exports.follow = function(follower, followed, callback)
 {
 	// HINT:
@@ -137,7 +126,6 @@ exports.follow = function(follower, followed, callback)
 };
 
 /* Unfollow user */
-
 exports.unfollow = function(follower, followed, callback)
 {
 	// HINT:
@@ -165,7 +153,6 @@ exports.unfollow = function(follower, followed, callback)
 
 
 /* is Following */
-
 exports.isFollowing = function(follower, followed, callback)
 {
 	// HINT:
@@ -187,7 +174,6 @@ exports.isFollowing = function(follower, followed, callback)
 
 
 /* get User tweets */
-
 var getTweets = function(listTweetid, callback){
     var getTweetReq = "SELECT tweetid, username, author, body, dateOf(tweetid) AS created_at FROM twitter.Tweets WHERE tweetid IN ?";
     app.db.execute(getTweetReq, [ listTweetid ], function(e, result) {
@@ -254,7 +240,7 @@ exports.getUserInfo = function(username, callback) {
 
     var getUserInfoReq = "SELECT name FROM twitter.users WHERE username = ?";
     app.db.execute(getUserInfoReq, [ username ], function(e, result) {
-        if (result.rows.length > 0) {
+        if (result && result.rows.length > 0) {
             callback(null, result.rows[0].name);
         }
         else{
