@@ -100,6 +100,8 @@ public class CassandraConsumer {
             threadedConsumers.run(threads);
 
             Thread.sleep(365 * 24 * 60 * 60 * 1000);
+
+            threadedConsumers.shutdown();
         }
     }
 }

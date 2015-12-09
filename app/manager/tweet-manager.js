@@ -28,21 +28,25 @@ exports.newTweet = function(data, callback)
     // we suggest you use async.parallel.
     // This function in the end must call callback(err, data)
 
+
+    // tweetsanalytics
+
+    var client = new kafka.Client(config.get('Zookeeper.address'));
+    var producer = new HighLevelProducer(client);
+    producer.on('error', function(err){
+        console.log("Error Zookeeper :" + err);
+    });
+
     async.parallel([
         function(cb){
-            var client = new kafka.Client(config.get('Zookeeper.address'));
-            var producer = new HighLevelProducer(client);
-            producer.on('error', function(err){
-                console.log("Error Zookeeper :" + err);
-            });
             var payloads = [
                 { topic: 'tweetscassandra', messages: JSON.stringify(data), partition: 0 },
+                { topic: 'tweetsanalytics', messages: JSON.stringify(data), partition: 0 },
             ];
             producer.on('ready', function () {
                 producer.send(payloads, cb);
             });
-        },
-
+        }
     ], function(error, res){ callback(error, res)});
 
 };
