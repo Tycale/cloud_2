@@ -5,7 +5,7 @@
     "prefix": "twitter:"
   },
   "App": {
-    "port": 3002
+    "port": 3000
   },
   "Session": {
     "secretToken": "Efm4RJRasjUwB2kW42aTUpf26ux66SRRMFsCHCr92hnsjLQb52zHzd",
