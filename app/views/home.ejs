@@ -21,20 +21,15 @@
 			</form>
 			<div style="margin-left: 25px;" ng-show="tweetSent" class="alert alert-success" role="alert">Tweet sent !</div>
 			<div style="margin-left: 27px;" ng-show="uploadError" class="alert alert-warning-alt" role="alert" >An error happened: {{errorMessage}}</div>
-		</p>
+
 		<h1>Trendings hashtag</h1>
-		<p>
-		<div ng-repeat="topic in topics()" style="height: 20px;" class="topicWrapper">
-          <span class="name">
-				{{hashtag}}
-			  <span class="right">
-				  {{count}}
-			  </span>
-          </span>
-		</div>
-		</p>
-
-
+		<ul>
+			<li ng-repeat="t in topics" style="height: 20px;" class="topicWrapper">{{t.hashtag}}
+			<span style="text-align: right; color: #d6e9c6;">
+				({{t.count}})
+			</span>
+			</li>
+		</ul>
 	</div>
 	
 	<div id="ribbits" class="panel left">

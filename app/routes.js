@@ -13,7 +13,7 @@ var AWS = require('aws-sdk');
 var redis = require('redis');
 var config = require('config');
 var client = redis.createClient(config.get('Redis.port'), config.get('Redis.host'));
-
+var _ = require('underscore');
 // AWS.config.loadFromPath('./awsCredentials.json');
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -214,12 +214,9 @@ router.get('/trends/', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
-    client.hgetall('trendings', function(err, data){
+    client.get('trendings', function(err, data){
         if (err != null)
             return console.log(err);
-
-        console.dir(data);
-
         var trends = [];
         _(data.split('\n')).each(function(topic){
             var two = topic.split('\t');

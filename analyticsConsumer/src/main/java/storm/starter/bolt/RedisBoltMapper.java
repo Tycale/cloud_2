@@ -12,7 +12,7 @@ public class RedisBoltMapper implements RedisStoreMapper {
 
     public RedisBoltMapper() {
         description = new RedisDataTypeDescription(
-                RedisDataTypeDescription.RedisDataType.HASH, hashKey);
+                RedisDataTypeDescription.RedisDataType.STRING);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class RedisBoltMapper implements RedisStoreMapper {
 
     @Override
     public String getKeyFromTuple(ITuple tuple) {
-        return "top";
+        return "trendings";
     }
 
     @Override
