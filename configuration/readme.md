@@ -3,8 +3,8 @@
 
 Create a new topic with partitions :
 
-kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic tweetscassandra
-kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic tweetsanalytics
+/usr/local/kafka_2.8.0-0.8.1.1/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic tweetscassandra
+/usr/local/kafka_2.8.0-0.8.1.1/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic tweetsanalytics
 
 #Floflo
 /usr/local/Cellar/kafka/0.8.2.2/libexec/bin/zookeeper-server-start.sh zoo.cfg 

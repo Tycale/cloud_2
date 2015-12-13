@@ -113,7 +113,7 @@ router.get('/usr', function(req, res) {
 
 /** Return informations about user **/
 
-router.get('/usr/:username', function(req, res) {
+router.get('/usr/:username', function(req, res, next) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }
@@ -121,12 +121,12 @@ router.get('/usr/:username', function(req, res) {
     var result = {isFollowing: false, fullname: ""};
 
     AM.isFollowing(username, req.params.username, function(e, o) {
-        if (e != null)
-            return console.log(e);
+        if (e != null || o == null)
+            res.status(500).send('Cannot find username ' + req.params.username);
         result.isFollowing = o;
         AM.getUserInfo(req.params.username, function(e, o) {
-            if (e != null){
-                return console.log(e);
+            if (e != null || o == null){
+                res.status(500).send('Cannot find username ' + req.params.username);
             } else {
                 result.fullname = o.name;
                 res.status(200).send(result).end();
