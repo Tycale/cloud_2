@@ -115,7 +115,6 @@ async.series([
         var u = byline(fs.createReadStream(__dirname + '/users.json'));
 
         u.on('data', function (line) {
-            if (line.length < 5) {
                 try {
                     var obj = JSON.parse(line);
                     saltAndHash("test", function (pass) {
@@ -138,9 +137,8 @@ async.series([
                 } catch (err) {
                     console.log("Error:", err);
                 }
-            }
         });
-        u.on('end', next);
+        return next();
     },
     function insertTweet(next) {
 
@@ -156,7 +154,6 @@ async.series([
         var t = byline(fs.createReadStream(__dirname + '/sample.json'));
 
         t.on('data', function (line) {
-            if (line.length < 5) {
                 try {
                     var obj = JSON.parse(line);
                     obj.created_at = new Date(Date.parse(obj.created_at));
@@ -187,13 +184,11 @@ async.series([
                 } catch (err) {
                     console.log("Error:", err);
                 }
-            }
         });
-        t.on('end', next);
+        return next();
     }
 ], function(err, res){
         if(err == null) console.log("Tables created.");
-        process.exit();
     });
 
 function afterExecution(errorMessage, successMessage) {

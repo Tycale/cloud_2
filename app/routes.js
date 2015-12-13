@@ -124,7 +124,7 @@ router.get('/usr/:username', function(req, res) {
         if (e != null)
             return console.log(e);
         result.isFollowing = o;
-        AM.getUserInfo(req.body.username, function(e, o) {
+        AM.getUserInfo(req.params.username, function(e, o) {
             if (e != null){
                 return console.log(e);
             } else {
@@ -210,7 +210,7 @@ router.get('/newsFeed/:offset', function(req, res) {
     });
 });
 
-router.get('/trends/', function(req, res) {
+router.get('/top10/', function(req, res) {
     if (req.session.user === null) {
         res.status(403).send("not authentificated").end();
     }

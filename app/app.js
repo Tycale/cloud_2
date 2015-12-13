@@ -37,8 +37,8 @@ var expressSessionOptions = {
     secret: config.get('Session.secretToken'),
     store: sessionStore,
     maxAge: config.get('Session.maxAge'),
-    resave: false,
-    saveUninitialized: true
+    resave: true,
+    saveUninitialized: false
 };
 
 app.use(expressSession(expressSessionOptions));

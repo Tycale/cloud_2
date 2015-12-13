@@ -53,7 +53,7 @@ angular.module('faketwitter.home', ['ngRoute', 'infinite-scroll'])
             };
             $scope.sendTweetButton = true;
             $scope.topics = [];
-            $http.get('/trends/').
+            $http.get('/top10/').
             success(function (data, status, headers, config) {
                 for(var i in data){
                     if(data[i].hashtag != ''){
