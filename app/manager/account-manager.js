@@ -27,7 +27,7 @@ exports.autoLogin = function(user, pass, callback)
 exports.manualLogin = function(user, pass, callback)
 {
 	app.db.execute(getUser, [ user ], function(e, result) {
-		if (result != null && result.rows.length == 0){
+		if (result != null && result.rows.length == 0 && typeof result === 'undefined'){
 			callback('user-not-found');
 		} else {
 			var o = result.rows[0];
