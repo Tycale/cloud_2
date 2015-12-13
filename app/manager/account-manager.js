@@ -27,10 +27,9 @@ exports.autoLogin = function(user, pass, callback)
 exports.manualLogin = function(user, pass, callback)
 {
 	app.db.execute(getUser, [ user ], function(e, result) {
-		if (result && result.rows.length == 0){
+		if (result != null && result.rows.length == 0){
 			callback('user-not-found');
-		}
-		else {
+		} else {
 			var o = result.rows[0];
 			validatePassword(pass, o.pass, function(err, res) {
 				if (res){
