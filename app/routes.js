@@ -215,15 +215,17 @@ router.get('/top10/', function(req, res) {
         res.status(403).send("not authentificated").end();
     }
     client.get('trendings', function(err, data){
-        if (err != null || data == null)
-            return console.log(err);
         var trends = [];
-        _(data.split('\n')).each(function(topic){
-            var two = topic.split('\t');
-            var hashtag = two[0];
-            var count = two[1];
-            trends.push({hashtag: hashtag, count: count});
-        });
+        if (err != null || data == null){
+            console.log(err);
+        } else {
+            _(data.split('\n')).each(function(topic){
+                var two = topic.split('\t');
+                var hashtag = two[0];
+                var count = two[1];
+                trends.push({hashtag: hashtag, count: count});
+            });
+        }
         res.status(200).send(trends).end();
     });
 });

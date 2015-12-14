@@ -46,6 +46,28 @@ exports.newTweet = function(data, callback)
             producer.on('ready', function () {
                 producer.send(payloads, cb);
             });
+        },
+        function(cb){
+            var insertTweet = "INSERT INTO twitter.Tweets (tweetid, username, author, body) VALUES(?, ?, ?, ?);";
+            app.db.execute(insertTweet, [ data.tweetid, data.username, data.name, data.body ], function(e, result) {
+                if (e != null) {
+                    cb(null, result);
+                }
+                else{
+                    callback(e, null);
+                }
+            });
+        },
+        function(cb){
+            var insertUserline = "INSERT INTO twitter.Userline (tweetid, username) VALUES(?, ?);";
+            app.db.execute(insertUserline, [ data.tweetid, data.username], function(e, result) {
+                if (e != null) {
+                    cb(null, result);
+                }
+                else{
+                    callback(e, null);
+                }
+            });
         }
     ], function(error, res){ callback(error, res)});
 

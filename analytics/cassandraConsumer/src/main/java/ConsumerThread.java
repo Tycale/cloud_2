@@ -23,8 +23,6 @@ public class ConsumerThread implements Runnable {
     private static Cluster cluster;
     private static Session session;
     private final PreparedStatement followerTimeLine;
-    private final PreparedStatement userTimeline;
-    private final PreparedStatement tweetinsert;
     private final PreparedStatement getFollowers;
 
     public ConsumerThread(ConsumerConnector consumer, KafkaStream<byte[], byte[]> stream, int threadNumber, String contactPoints, String dcName) {
@@ -40,7 +38,6 @@ public class ConsumerThread implements Runnable {
             clusterBuilder.addContactPoint(address);
         }
 
-
         this.cluster = clusterBuilder
                 .withRetryPolicy(DefaultRetryPolicy.INSTANCE)
                 .withLoadBalancingPolicy(
@@ -53,13 +50,6 @@ public class ConsumerThread implements Runnable {
         followerTimeLine = session.prepare(
                 "INSERT INTO twitter.Timeline (tweetid, username) "
                         + "VALUES(?, ?);");
-
-        userTimeline = this.session.prepare(
-                "INSERT INTO twitter.Userline (tweetid, username) "
-                        + "VALUES(?, ?);");
-        tweetinsert = this.session.prepare(
-                "INSERT INTO twitter.Tweets (tweetid, username, author, body) "
-                        + "VALUES(?, ?, ?, ?);");
 
         String cqlStatement = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username=?;";
         getFollowers = session.prepare(cqlStatement);
@@ -99,16 +89,6 @@ public class ConsumerThread implements Runnable {
         // SELECT have_follower FROM twitter.BackwardFollowing WHERE username=?
         BoundStatement boundStatementFollowers = new BoundStatement(getFollowers);
         ResultSet FollowersList = session.execute(boundStatementFollowers.bind(username));
-
-
-        // Insert the tweet
-        BoundStatement boundStatement = new BoundStatement(tweetinsert);
-        bs.add(boundStatement.bind(tweetid,username, author,tweet));
-
-
-        // Insert the tweet in the userline
-        BoundStatement timelinebind = new BoundStatement(userTimeline);
-        bs.add(timelinebind.bind(tweetid,username));
 
         // Insert the tweet in timelines
         for (Row row : FollowersList) {
