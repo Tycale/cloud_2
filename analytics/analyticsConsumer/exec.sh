@@ -1,2 +1,2 @@
 #!/bin/bash
-gradle run
+GRADLE_OPTS=-Xmx256m gradle run

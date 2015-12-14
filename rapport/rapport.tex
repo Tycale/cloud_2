@@ -316,6 +316,8 @@
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
 
+\usepackage{url}
+\usepackage{listings}
 
 \begin{document}
 %
@@ -382,7 +384,6 @@
 
 
 
-
 % make the title area
 \maketitle
 
@@ -421,7 +422,13 @@ In order to scale the application, we first started by adding more NodeJS instan
 A problem occurred when a connected client is balanced between one NodeJS worker to another because the session variables are stored inside the worker itself. To solve that problem, we used Redis, which will keep in memory the session variables instead of the workers, so that a user won't be disconnected when being balanced between the NodeJS instances.
 
 \subsection{NGINX}
-Since there are multiple node workers for the application, we use NGINX in reverse proxy mode to dispatch the load toward the different workers. 
+Since there are multiple node workers for the application, we use NGINX in reverse proxy mode to dispatch the load toward the different workers.  This can be configured by adding multiple servers line to the nginx configuration.
+
+\begin{lstlisting}
+upstream ribbit {
+        server localhost:3002;
+}
+\end{lstlisting}
 
 \subsection{NGINX Bottleneck}
 Because all user's requests pass through NGINX first, it can become a bottleneck for our application. In the interest of avoiding this situation, a solution could be to set multiple NGINX servers and configure a DNS round-robin to address them. 
@@ -451,6 +458,16 @@ The application can then access the result of the computation directly on the Re
 %  kafka -> storm 
 %
 %
+
+\section{Vagrant}
+As there is a lot of things to configure and launch in the supplied Virtual Machine, we created a file with all needed commands to run and also a puppet script that can execute them. Commands can be found in the file \texttt{configuration/VM.md}. The puppet file can be found in \texttt{VM/manifests/base.pp}. It is possible to create a Virtual Machine that will execute the puppet manifest by launching the command \texttt{vagrant up --provision} in the directory \texttt{VM}. This puppet file can take a lot of time to execute.
+
+\section{AWS EC2}
+If you don't to wait for the Virtual Machine to be provisionned, our project is also deployed on AWS EC2 on the following URL : \url{http://tycale.be}.
+
+\section{Conclusion}
+This project was very instructive, our group learnt a lot about scaling an existing application in the purpose to deal with Big Data. Also, we discovered and played with a lot of cloud-related applications (Zookeeper, Kafka, Cassandra, Storm, etc.). And this project has taught us more about the Linux ecosystem for being able to put all these services together.
+
 % no \IEEEPARstart
 
 % You must have at least 2 lines in the paragraph with the drop letter
