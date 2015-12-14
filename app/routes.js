@@ -215,7 +215,7 @@ router.get('/top10/', function(req, res) {
         res.status(403).send("not authentificated").end();
     }
     client.get('trendings', function(err, data){
-        if (err != null)
+        if (err != null || data == null)
             return console.log(err);
         var trends = [];
         _(data.split('\n')).each(function(topic){
