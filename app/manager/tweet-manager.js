@@ -49,7 +49,7 @@ exports.newTweet = function(data, callback)
         },
         function(cb){
             var insertTweet = "INSERT INTO twitter.Tweets (tweetid, username, author, body) VALUES(?, ?, ?, ?);";
-            app.db.execute(insertTweet, [ data.tweetid, data.username, data.name, data.body ], function(e, result) {
+            app.db.execute(insertTweet, [ data.tweetid, data.username, data.author, data.body ], function(e, result) {
                 if (e != null) {
                     cb(null, result);
                 }

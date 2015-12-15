@@ -80,10 +80,6 @@ public class ConsumerThread implements Runnable {
 
     public Boolean insertTweetToCassandra(UUID tweetid, String username, String author, String tweet) {
 
-        // Batching improves perfs as we remove a lot of RTT between cassandra and our consumer
-        // Unlogged batch improves perf but if cassandra fails, tweet are going to be duplicate if cassandra fails
-        BatchStatement bs = new BatchStatement(BatchStatement.Type.UNLOGGED);
-
 
         // get followers that follow username
         // SELECT have_follower FROM twitter.BackwardFollowing WHERE username=?
@@ -95,10 +91,9 @@ public class ConsumerThread implements Runnable {
             String follower = row.getString("have_follower");
             Logger.getGlobal().info("Adding tweet " + tweetid + " in timeline of " + follower);
             BoundStatement followertimelinebind = new BoundStatement(followerTimeLine);
-            bs.add(followertimelinebind.bind(tweetid,follower));
+            this.session.execute(followertimelinebind.bind(tweetid,follower));
         }
 
-        this.session.execute(bs);
         return true;
     }
 }
