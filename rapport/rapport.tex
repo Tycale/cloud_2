@@ -461,7 +461,7 @@ The application can then access the result of the computation directly on the Re
 %
 
 \section{Vagrant}
-As there is a lot of things to configure and launch in the supplied Virtual Machine, we created a file with all needed commands to run and also a puppet script that can execute them. Commands can be found in the file \texttt{configuration/VM.md}. The puppet file can be found in \texttt{VM/manifests/base.pp}. It is possible to create a Virtual Machine that will execute the puppet manifest by launching the command \texttt{vagrant up --provision} in the directory \texttt{VM}. This puppet file can take a lot of time to execute.
+As there is a lot of things to configure and launch in the supplied Virtual Machine, we created a file with all needed commands to run and also a puppet script that can execute them. Commands can be found in the file \texttt{configuration/VM.md}. The puppet file can be found in \texttt{VM/manifests/base.pp}. It is possible to create a Virtual Machine that will execute the puppet manifest by launching the command \texttt{vagrant up --provision} in the directory \texttt{VM}. This puppet file can take a lot of time to execute ($\pm{}$40 min). There are deamons that launch everything needed for this project to work at each boot. As the memory of the Virtual Machine was a problem, we decided to not install any desktop environment. To access to the website, we created a port forwarding (host:8080 $\rightarrow{}$ guest:80) between vagrant and the host. Ribbit is reachable via the link \url{http://localhost:8080}.
 
 \section{AWS EC2}
 If you don't to wait for the Virtual Machine to be provisionned, our project is also deployed on AWS EC2 on the following URL : \url{http://tycale.be}.

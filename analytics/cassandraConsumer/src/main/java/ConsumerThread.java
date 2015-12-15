@@ -6,7 +6,6 @@ import com.datastax.driver.core.policies.TokenAwarePolicy;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
-import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -14,6 +13,7 @@ import org.json.simple.parser.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 public class ConsumerThread implements Runnable {
     private ConsumerConnector consumer;
@@ -60,7 +60,7 @@ public class ConsumerThread implements Runnable {
 
         while (it.hasNext()) {
             String msg = new String(it.next().message());
-            Logger.getRootLogger().info(System.currentTimeMillis() + ",Thread " + threadNumber + ": " + msg);
+            Logger.getGlobal().info(System.currentTimeMillis() + ",Thread " + threadNumber + ": " + msg);
 
             try {
                 JSONObject json = (JSONObject)new JSONParser().parse(msg);
@@ -69,7 +69,7 @@ public class ConsumerThread implements Runnable {
                 insertTweetToCassandra(uuid, (String)json.get("username"), (String)json.get("author"), (String)json.get("body"));
 
             } catch (ParseException e){
-                Logger.getRootLogger().error("Cannot parse JSON : " + e + " : " + msg );
+                Logger.getGlobal().warning("Cannot parse JSON : " + e + " : " + msg );
             }
         }
 
@@ -93,6 +93,7 @@ public class ConsumerThread implements Runnable {
         // Insert the tweet in timelines
         for (Row row : FollowersList) {
             String follower = row.getString("have_follower");
+            Logger.getGlobal().info("Adding tweet " + tweetid + " in timeline of " + follower);
             BoundStatement followertimelinebind = new BoundStatement(followerTimeLine);
             bs.add(followertimelinebind.bind(tweetid,follower));
         }
