@@ -68,7 +68,7 @@ exports.getFollowers = function(username, callback) {
 	// Invoke callback(null, followers) where followers is a list of usernames
 	// If the query fails:
 	// Invoke callback(e, null)
-    var getfollowerReq = "SELECT follower FROM twitter.ForwardFollowing WHERE username = ?";
+    var getfollowerReq = "SELECT follower FROM twitter.BackwardFollowing WHERE username = ?";
     app.db.execute(getfollowerReq, [ username ], function(e, result) {
         if (result && result.rows.length > 0) {
             callback(null, _(result.rows).pluck('follower'));
@@ -86,7 +86,7 @@ exports.getFollowing = function(username, callback) {
 	// Invoke callback(null, follows) where follows is a list of persons that are followed by the username
 	// If the query fails:
 	// Invoke callback(e, null)
-    var getfollowingReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username = ?";
+    var getfollowingReq = "SELECT have_follower FROM twitter.ForwardFollowing WHERE username = ?";
     app.db.execute(getfollowingReq, [ username ], function(e, result) {
         if (result && result.rows.length > 0) {
             callback(null, _(result.rows).pluck('have_follower'));
