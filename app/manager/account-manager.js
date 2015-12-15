@@ -71,7 +71,7 @@ exports.getFollowers = function(username, callback) {
     var getfollowerReq = "SELECT have_follower FROM twitter.BackwardFollowing WHERE username = ?";
     app.db.execute(getfollowerReq, [ username ], function(e, result) {
         if (result && result.rows.length > 0) {
-            callback(null, _(result.rows).pluck('follower'));
+            callback(null, _(result.rows).pluck('have_follower'));
         }
         else{
             callback(e, null);
@@ -89,7 +89,7 @@ exports.getFollowing = function(username, callback) {
     var getfollowingReq = "SELECT follower FROM twitter.ForwardFollowing WHERE username = ?";
     app.db.execute(getfollowingReq, [ username ], function(e, result) {
         if (result && result.rows.length > 0) {
-            callback(null, _(result.rows).pluck('have_follower'));
+            callback(null, _(result.rows).pluck('follower'));
         }
         else{
             callback(e, null);
