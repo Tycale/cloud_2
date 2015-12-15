@@ -411,7 +411,7 @@ touch /var/lock/zookeeper
 # Carry out specific functions when asked to by the system
 case \"\$1\" in
   start)
-    JAVA_OPTS=\"-Xms256m -Xmx256m\" /usr/local/kafka_2.8.0-0.8.1.1/bin/zookeeper-server-start.sh /etc/zoo.cfg >> /var/log/zoo.log 2>&1 &
+     JAVA_OPTS=\"-Xms256m -Xmx256m\" /usr/local/kafka_2.8.0-0.8.1.1/bin/zookeeper-server-start.sh /etc/zoo.cfg >> /var/log/zoo.log 2>&1 &
     ;;
   stop)
     sudo pkill zookeeper-server-start.sh
@@ -424,22 +424,6 @@ esac
 
 exit 0
     "
-}
-
-exec{"launch_zookeeper1":
-    require => [Exec["install kafka"], Exec["git_clone"], File["config_zookeeper"], File["zookeeper_deamon"]],
-    command => "sudo update-rc.d zookeeper defaults",
-    timeout => 480,
-    tries => 3,
-    try_sleep => 60,
-}
-
-exec{"launch_zookeeper":
-    require => [Exec["install kafka"], Exec["git_clone"], File["config_zookeeper"], File["zookeeper_deamon"], Exec["launch_zookeeper1"]],
-    command => "sudo /etc/init.d/zookeeper start",
-    timeout => 480,
-    tries => 3,
-    try_sleep => 60,
 }
 
 file{"config_kafka":
@@ -481,7 +465,7 @@ touch /var/lock/kafka
 # Carry out specific functions when asked to by the system
 case \"\$1\" in
   start)
-     KAFKA_OPTS=\"-Xms256m -Xmx256m\" /usr/local/kafka_2.8.0-0.8.1.1/bin/kafka-server-start.sh /etc/kafka.properties >> /var/log/kafka.log 2>&1 &
+     sleep 40 && KAFKA_OPTS=\"-Xms256m -Xmx256m\" /usr/local/kafka_2.8.0-0.8.1.1/bin/kafka-server-start.sh /etc/kafka.properties >> /var/log/kafka.log 2>&1 &
     ;;
   stop)
     sudo pkill kafka-server-start.sh
@@ -496,23 +480,10 @@ exit 0
     "
 }
 
-exec{"launch_kafka1":
-    require => [Exec["install kafka"], Exec["git_clone"], File["config_kafka"], File["kafka_deamon"], Exec["launch_zookeeper"]],
-    command => "sudo update-rc.d kafka defaults",
-    tries => 3,
-    try_sleep => 60, 
-}
-
-exec{"launch_kafka":
-    require => [Exec["install kafka"], Exec["git_clone"], File["config_kafka"], File["kafka_deamon"], Exec["launch_zookeeper"], Exec["launch_kafka1"]],
-    command => "sudo /etc/init.d/kafka start",
-    tries => 3,
-    try_sleep => 60, 
-}
-
 exec{"kafka_topics":
-  command => "/usr/local/kafka_2.8.0-0.8.1.1/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic tweetscassandra && /usr/local/kafka_2.8.0-0.8.1.1/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic tweetsanalytics",
-  require => Exec["launch_kafka"]
+  command => "/usr/local/kafka_2.8.0-0.8.1.1/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic tweetscassandra && /usr/local/kafka_2.8.0-0.8.1.1/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic tweetsanalytics && touch /home/vagrant/.topics",
+  require => [Exec["launch_kafka"], Exec["vagrant_home"]],
+  creates => "/home/vagrant/.topics"
 }
 
 exec {'ln_node':
@@ -551,7 +522,7 @@ touch /var/lock/twitter_analytics
 # Carry out specific functions when asked to by the system
 case \"\$1\" in
   start)
-    cd /home/vagrant/cloud_2/analytics/analyticsConsumer/ && GRADLE_OPTS=\"-Xms256m -Xmx256m\" gradle run >> /var/log/analyticsConsumer.log 2>&1 &
+    sleep 50 && cd /home/vagrant/cloud_2/analytics/analyticsConsumer/ && GRADLE_OPTS=\"-Xms256m -Xmx256m\" gradle run >> /var/log/analyticsConsumer.log 2>&1 &
     ;;
   stop)
     pkill analyticsConsumer
@@ -596,7 +567,7 @@ touch /var/lock/twitter_cassandra
 # Carry out specific functions when asked to by the system
 case \"\$1\" in
   start)
-    cd /home/vagrant/cloud_2/analytics/cassandraConsumer/ && GRADLE_OPTS=\"-Xms512m -Xmx512m\" gradle run -Dexec.args=\"localhost:2181/ 0 tweetscassandra 1 127.0.0.1 datacenter1\" >> /var/log/cassandraConsumer.log 2>&1 &
+    sleep 60 && cd /home/vagrant/cloud_2/analytics/cassandraConsumer/ && GRADLE_OPTS=\"-Xms512m -Xmx512m\" gradle run -Dexec.args=\"localhost:2181/ 0 tweetscassandra 1 127.0.0.1 datacenter1\" >> /var/log/cassandraConsumer.log 2>&1 &
     ;;
   stop)
     pkill cassandraConsumer
@@ -672,4 +643,32 @@ exec{"launch_app":
     try_sleep => 60,
 }
 
+exec{"launch_kafka1":
+    require => [Exec["install kafka"], Exec["git_clone"], File["config_kafka"], File["kafka_deamon"], Exec["launch_zookeeper"]],
+    command => "sudo update-rc.d kafka defaults",
+    tries => 3,
+    try_sleep => 60, 
+}
 
+exec{"launch_kafka":
+    require => [Exec["install kafka"], Exec["git_clone"], File["config_kafka"], File["kafka_deamon"], Exec["launch_zookeeper"], Exec["launch_kafka1"]],
+    command => "sudo /etc/init.d/kafka start",
+    tries => 3,
+    try_sleep => 60, 
+}
+
+exec{"launch_zookeeper1":
+    require => [Exec["install kafka"], Exec["git_clone"], File["config_zookeeper"], File["zookeeper_deamon"]],
+    command => "sudo update-rc.d zookeeper defaults",
+    timeout => 480,
+    tries => 3,
+    try_sleep => 60,
+}
+
+exec{"launch_zookeeper":
+    require => [Exec["install kafka"], Exec["git_clone"], File["config_zookeeper"], File["zookeeper_deamon"], Exec["launch_zookeeper1"]],
+    command => "sudo /etc/init.d/zookeeper start",
+    timeout => 480,
+    tries => 3,
+    try_sleep => 60,
+}
