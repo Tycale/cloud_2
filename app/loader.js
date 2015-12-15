@@ -121,7 +121,7 @@ async.series([
             var obj = JSON.parse(line);
             saltAndHash("test", function (pass) {
                 client.execute(upsertUser,
-                    [obj.username, obj.fullname, obj.pass],
+                    [obj.username, obj.fullname, pass],
                     function (err, res) {
                         async.each(obj.followers, function (follower, callback) {
                             client.execute(upsertForwardFollowing,
