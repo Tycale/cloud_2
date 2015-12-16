@@ -99,6 +99,7 @@ exec {"fix guest addition issues": #presumed to be necessary because of a vagran
 exec {"set kafka permissions":
      command => "chown -R vagrant /usr/local/kafka/",
      user => root,
+     require => User["vagrant"],
  	 #require => User["hduser"],
      subscribe => Exec["install kafka"],
      refreshonly => true,
@@ -366,9 +367,21 @@ exec{"nginx_restart":
     require => File["default"]
 }
 
+group { 'vagrant':
+  name => "vagrant",
+  ensure => present,
+}
+
+user {"vagrant":
+  name => "vagrant",
+  ensure => present,
+  require => Group["vagrant"]
+}
+
 exec{"vagrant_home":
-    command => "mkdir -p /home/vagrant/.ssh/",
-    onlyif => ["test ! -d /home/vagrant/"]
+    command => "mkdir -p /home/vagrant/.ssh/ && chown -R vagrant:vagrant /home/vagrant/",
+    onlyif => ["test ! -d /home/vagrant/"],
+    require => User["vagrant"],
 }
 
 exec{"know_github":
@@ -377,11 +390,17 @@ exec{"know_github":
   require => [Package["git"], Exec["vagrant_home"]]
 }
 
+exec{"git_clone_1":
+    command => "chown -R vagrant:vagrant /home/vagrant/",
+    user => "root",
+    require => [User["vagrant"]],
+}
+
 exec{"git_clone":
     command => "git clone git@github.com:Tycale/cloud_2.git",
     cwd => "/home/vagrant/",
     user => "vagrant",
-    require => [Exec["know_github"], File["id_rsa"]],
+    require => [Exec["know_github"], File["id_rsa"], Exec["vagrant_home"], Exec["vagrant_home"], Exec["git_clone_1"]],
     onlyif => ["test ! -d /home/vagrant/cloud_2/"]
 }
 
@@ -545,8 +564,16 @@ exec{"launch_twitter_analytics1":
     timeout => 480, 
 }
 
-exec{"launch_twitter_analytics":
+exec{"launch_twitter_analytics_first_fail":
     require => [Exec["kafka_topics"], Exec["config_app"], Exec["launch_twitter_analytics1"]], 
+    command => "sudo /etc/init.d/twitter_analytics start && sleep 180",
+    tries => 3,
+    try_sleep => 60,
+    timeout => 480, 
+}
+
+exec{"launch_twitter_analytics":
+    require => [Exec["kafka_topics"], Exec["config_app"], Exec["launch_twitter_analytics1"], Exec["launch_twitter_analytics_first_fail"]], 
     command => "sudo /etc/init.d/twitter_analytics start",
     tries => 3,
     try_sleep => 60,

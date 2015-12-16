@@ -427,6 +427,7 @@ Since there are multiple node workers for the application, we use NGINX in rever
 \begin{lstlisting}
 upstream ribbit {
         server localhost:3002;
+        # more server directives here..
 }
 \end{lstlisting}
 
@@ -462,11 +463,26 @@ The application can then access the result of the computation directly on the Re
 %
 %
 
-\section{Vagrant}
-As there is a lot of things to configure and launch in the supplied Virtual Machine, we created a file with all needed commands to run and also a puppet script that execute them. Commands can be found in the file \texttt{configuration/VM.md}. The puppet file can be found in \texttt{VM/manifests/base.pp}. It is possible to create a Virtual Machine that will execute the puppet manifest by launching the command \texttt{vagrant up --provision} in the directory \texttt{VM}. This puppet file can take a lot of time to execute ($\pm{}$40 min). There are deamons that launch everything needed for this project to work at each boot. As the memory of the Virtual Machine was a problem, we decided to not install any desktop environment and put 4Go of memory on it. To access to the website, we created a port forwarding (host:8080 $\rightarrow{}$ guest:80) between vagrant and the host. Ribbit is reachable via the link \url{http://localhost:8080}.
+\section{Vagrant \& Puppet}
+As there is a lot of things to configure and launch in the supplied Virtual Machine, we created a file with all needed commands to run and also a puppet script that execute them. Commands can be found in the file \texttt{configuration/VM.md}. The puppet file can be found in \texttt{VM/manifests/base.pp}. It is possible to create a Virtual Machine that will execute the puppet manifest by launching the command \texttt{vagrant up --provision} in the directory \texttt{VM}. This puppet file can take a lot of time to execute ($\pm{}$40 min). There are deamons that launch everything needed for this project to work at each boot. As the memory of the Virtual Machine was a problem, we decided to not install any desktop environment and put 4Go of memory on it. To access to the website, we created a port forwarding (host:8080 $\rightarrow{}$ guest:80) between vagrant and the host. Ribbit is reachable via the link \url{http://localhost:8080}. The deamon and configuration files created are the following :
+\begin{itemize}
+\item /etc/init.d/zookeeper : launches zookeeper with the configuration file : /etc/zoo.cfg. Logs available in /var/log/zoo.log
+\item /etc/init.d/kafka launches : kafka with the configuration file : /etc/kafka.properties. Logs available in /var/log/kafka.log
+\item /etc/init.d/twitter\_analytics : launches the analytics (trendings) with configuration file : /home/vagrant/cloud\_2/analytics/analyticsConsumer/src/main/resources/application.conf. Logs available in /var/log/analyticsConsumer.log
+\item /etc/init.d/twitter\_cassandra : launches the cassandra consumer (configuration in the daemon itself via the arguments). Logs available in /var/log/cassandraConsumer.log
+\item /etc/init.d/ribbit : launches the web app ribbit with the configuration file : /home/vagrant/cloud\_2/app/config/production.json. Logs available in /var/log/ribbit.log
+\end{itemize}
+You might need to restart the Virtual Machine once the provision is done. Every services will be automatically launched at the startup.
 
 \section{AWS EC2}
-If you don't to wait for the Virtual Machine to be provisionned, our project is also deployed on AWS EC2 on the following URL : \url{http://ec2-54-213-117-68.us-west-2.compute.amazonaws.com/}.
+If you don't want to wait for the Virtual Machine to be provisionned, our project is also deployed on AWS EC2 on the following URL : \url{http://ec2-54-201-0-17.us-west-2.compute.amazonaws.com}. We deployed our project on four small instances. Here is the services running on each server :
+\begin{itemize}
+\item 54.201.37.158 : Cassandra, Redis, 2 nodeJS
+\item 54.201.79.233 : Analytics consumer, Tweets consumer, 2 nodeJS
+\item 54.201.19.47 : Kafka, Zookeeper, 2 nodeJS
+\item 54.201.0.17 : Nginx, 2 nodeJS
+\end{itemize}
+For being able to see that requests sent to the nginx are dispatched between these 4 servers, you can check the \texttt{HTTP header X-Upstream} to know the upstream source of any request.
 
 \section{Group work \& planing}
 In order to tackle this project, we obviously had to divide the workload within the group members. To do so, since we came up rapidely with missing part in the NodeJS and the solution of the first question (Scaling the frontend), we decided to put two people on the search of documentation and the implementation of the driver that reads from kafka and write to cassandra. And the two other on the search of documentation and implementation of the storm diver which performs the computation of the top $10$ hashtags. Once all that was done and working good with each other on a local machine, we put two people on the report and the two other on the deploying of the solution on Amazon.
