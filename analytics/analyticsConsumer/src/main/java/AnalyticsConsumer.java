@@ -53,6 +53,9 @@ public class AnalyticsConsumer {
         SpoutConfig spoutConfig = new SpoutConfig(hosts, topic, "/" + topic, UUID.randomUUID().toString());
         spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
         spoutConfig.stateUpdateIntervalMs = 2000;
+        spoutConfig.startOffsetTime = kafka.api.OffsetRequest.LatestTime();
+        spoutConfig.maxOffsetBehind = Long.MAX_VALUE;
+        spoutConfig.useStartOffsetTimeIfOffsetOutOfRange = true;
         KafkaSpout kafkaSpout = new KafkaSpout(spoutConfig);
 
 
